@@ -142,4 +142,12 @@ class MenuFusionSalles : public Menu
 };
 
 
+class MenuDetailMachine : public Menu
+{
+	public:
+
+		MenuDetailMachine(Loader& loader, sf::VideoMode const& resolution);
+};
+
+
 #endif // INTERFACE_H_INCLUDED

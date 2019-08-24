@@ -22,7 +22,7 @@ class Carte
 		float heureJournee() const;
 
 		void afficher(sf::RenderWindow& window, std::vector<Salle*>& sallesPointees, Machine* machinePointee);
-		void afficherRessources(sf::RenderWindow& window, Salle* sallePointee);
+		void afficherRessources(sf::RenderWindow& window, Salle* sallePointee, Machine* machinePointee);
 		void deplacerView(sf::RenderWindow const& window, float dt);
 		void resetView();
 		void gererZoom(float delta);
@@ -43,7 +43,7 @@ class Carte
 
 		void gererMachinesRessources(float dt);
 
-		void gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& sallesPointees, Salle*& nouvelleSalle);
+		void gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& sallesPointees, Machine* machinePointee, Salle*& nouvelleSalle);
 		void ajouterInformation(std::string chaine);
 		void gestionInformation(sf::RenderWindow const& window);
 

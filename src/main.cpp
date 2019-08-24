@@ -114,7 +114,7 @@ int main()
 								carte.selectionSalle(window, sallesPointees);
 							}
 
-							carte.gererClicMenu(window, sallesPointees, nouvelleSalle);
+							carte.gererClicMenu(window, sallesPointees, machinePointee, nouvelleSalle);
 						}
 					}
 					else if (event.mouseButton.button == sf::Mouse::Right)

@@ -305,6 +305,17 @@ sf::Texture* Machine::getTexture()
 }
 
 
+void Machine::afficherDetails(sf::RenderWindow& window)
+{
+	// TODO: Afficher détails machine
+
+	sf::RectangleShape rect(sf::Vector2f(50, 50));
+	rect.setPosition(10, 10);
+
+	window.draw(rect);
+}
+
+
 void Machine::setNoeudProche(Noeud* noeud)
 {
 	m_noeudProche = noeud;

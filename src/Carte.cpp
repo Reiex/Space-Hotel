@@ -64,6 +64,7 @@ Carte::Carte(sf::VideoMode const& resolution)
 	m_menus.push_back(new MenuCreationSalle(m_loader, resolution));
 	m_menus.push_back(new MenuDetailSalle(m_loader, resolution));
 	m_menus.push_back(new MenuFusionSalles(m_loader, resolution));
+	m_menus.push_back(new MenuDetailMachine(m_loader, resolution));
 }
 
 
@@ -160,11 +161,11 @@ void Carte::afficher(sf::RenderWindow& window, std::vector<Salle*>& sallesPointe
 	
 	if (sallesPointees.size() != 0)
 	{
-		afficherRessources(window, sallesPointees[0]);
+		afficherRessources(window, sallesPointees[0], machinePointee);
 	}
 	else
 	{
-		afficherRessources(window, 0);
+		afficherRessources(window, 0, machinePointee);
 	}
 
 	// Afficher les descriptions
@@ -188,7 +189,7 @@ void Carte::afficher(sf::RenderWindow& window, std::vector<Salle*>& sallesPointe
 }
 
 
-void Carte::afficherRessources(sf::RenderWindow& window, Salle* sallePointee)
+void Carte::afficherRessources(sf::RenderWindow& window, Salle* sallePointee, Machine* machinePointee)
 {
 	// AFFICHER LES RESSOURCES GLOBALES DANS LE HUD
 
@@ -381,6 +382,13 @@ void Carte::afficherRessources(sf::RenderWindow& window, Salle* sallePointee)
 		texte.setString(sf::String(chaine));
 		texte.setPosition(50, 285);
 		window.draw(texte);
+	}
+
+	// AFFICHER LES DETAILS DE LA MACHINE SELECTIONNEE
+
+	if (m_menus[5]->estAffiche())
+	{
+		machinePointee->afficherDetails(window);
 	}
 }
 
@@ -814,12 +822,13 @@ void Carte::gererMachinesRessources(float dt)
 }
 
 
-void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& sallesPointees, Salle*& nouvelleSalle)
+void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& sallesPointees, Machine* machinePointee, Salle*& nouvelleSalle)
 {
 	// Replier des menus avant ce clic
 
-	m_menus[0]->setAfficher(sallesPointees.size() == 0);
+	m_menus[0]->setAfficher(sallesPointees.size() == 0 && machinePointee == 0);
 	m_menus[3]->setAfficher(sallesPointees.size() != 0);
+	m_menus[5]->setAfficher(machinePointee != 0);
 
 	// Obtenir l'emplacement du clic
 

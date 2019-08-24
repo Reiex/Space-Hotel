@@ -106,7 +106,7 @@ class Machine : public Conteneur, public Entite
 		virtual void effectuerRotation(Loader& loader);
 
 		sf::Texture* getTexture();
-		//TODO: afficherDescription();
+		void afficherDetails(sf::RenderWindow& window);
 
 		void setNoeudProche(Noeud* noeud);
 		Noeud* getNoeudProche() const;
