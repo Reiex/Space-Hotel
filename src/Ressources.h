@@ -3,6 +3,7 @@
 
 #include "Entite.h"
 #include "Loader.h"
+#include "fonctions.h"
 #include <vector>
 
 
@@ -97,6 +98,8 @@ class Machine : public Conteneur, public Entite
 {
 	public:
 
+		static Entite const SurfaceDessinDetails;
+
 		Machine(int nbEntrees, int nbSorties);
 		virtual void faireFonctionner(float dt);
 
@@ -106,7 +109,7 @@ class Machine : public Conteneur, public Entite
 		virtual void effectuerRotation(Loader& loader);
 
 		sf::Texture* getTexture();
-		void afficherDetails(sf::RenderWindow& window);
+		virtual void afficherDetails(sf::RenderWindow& window, Loader& loader) const = 0;
 
 		void setNoeudProche(Noeud* noeud);
 		Noeud* getNoeudProche() const;
@@ -132,6 +135,7 @@ class TerminalRadiateur : public Machine
 	public:
 
 		TerminalRadiateur(Loader& loader);
+		void afficherDetails(sf::RenderWindow& window, Loader& loader) const;
 		void faireFonctionner(float dt);
 		void effectuerRotation(Loader& loader);
 };

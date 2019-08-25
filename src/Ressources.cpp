@@ -263,6 +263,9 @@ Ressource::~Ressource()
 // FONCTIONS MEMBRES DE LA CLASSE MACHINE
 
 
+Entite const Machine::SurfaceDessinDetails(15, 15, 474, 230);
+
+
 Machine::Machine(int nbEntrees, int nbSorties) : Conteneur(nbEntrees + nbSorties)
 {
 	for (int i(nbEntrees); i < nbEntrees + nbSorties; i++)
@@ -302,17 +305,6 @@ void Machine::effectuerRotation(Loader& loader)
 sf::Texture* Machine::getTexture()
 {
 	return m_texture;
-}
-
-
-void Machine::afficherDetails(sf::RenderWindow& window)
-{
-	// TODO: Afficher détails machine
-
-	sf::RectangleShape rect(sf::Vector2f(50, 50));
-	rect.setPosition(10, 10);
-
-	window.draw(rect);
 }
 
 
@@ -370,6 +362,120 @@ TerminalRadiateur::TerminalRadiateur(Loader& loader) : Machine(2, 0)
 
 	m_energieConso = 2;
 	m_chaleurDissipee = 0;
+}
+
+
+void TerminalRadiateur::afficherDetails(sf::RenderWindow& window, Loader& loader) const
+{
+	int x(SurfaceDessinDetails.getX()), y(SurfaceDessinDetails.getY()), w(SurfaceDessinDetails.getW()), h(SurfaceDessinDetails.getH());
+
+	sf::Texture* texture;
+	sf::Sprite sprite;
+	sf::Text texte;
+	texte.setFont(*(loader.getFont()));
+	texte.setFillColor(sf::Color(5, 15, 6));
+	texte.setCharacterSize(25);
+
+	/*
+		Consommation électrique: [] X
+
+		Alimentation du radiateur:
+		
+			[] [] ===> [Thermometre] [Thermometre]
+
+		Chaleur dissipée: [] X
+	
+	*/
+
+	// Consommation électrique
+	
+	texte.setString(sf::String("Consommation électrique:"));
+	texte.setPosition(x, y + 5);
+	window.draw(texte);
+
+	int wTexte(texte.getGlobalBounds().width);
+	texture = loader.obtenirTexture("images/interface/logo electricite.png");
+	sprite.setTexture(*texture);
+	sprite.setPosition(x + wTexte + 10, y + 3);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	texte.setString(sf::String(float_to_string(m_energieConso)));
+	texte.setPosition(x + wTexte + 50, y);
+	texte.setCharacterSize(30);
+	window.draw(texte);
+
+	texte.setCharacterSize(25);
+
+	// Alimentation du radiateur
+
+	texte.setString(sf::String("Alimentation du radiateur:"));
+	texte.setPosition(x, y + h/2 - 50);
+	window.draw(texte);
+
+	int nbEau(m_emplacements[0].estOccupe() + m_emplacements[1].estOccupe());
+	if (nbEau >= 1)
+	{
+		texture = loader.obtenirTexture("images/interface/logo eau.png");
+	}
+	else
+	{
+		texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
+	}
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setPosition(x + (w - 200)/2 , y + h/2 + 20);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	if (nbEau >= 2)
+	{
+		texture = loader.obtenirTexture("images/interface/logo eau.png");
+	}
+	else
+	{
+		texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
+	}
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setPosition(x + (w - 200)/2 + 40, y + h/2 + 20);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	texture = loader.obtenirTexture("images/interface/detail machine/progression.png");
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 84, 30));
+	sprite.setPosition(x + (w - 200)/2 + 78, y + h/2 + 20);
+	sprite.setScale(1, 1);
+	window.draw(sprite);
+
+	sprite.setTextureRect(sf::IntRect(0, 30, 37.5*nbEau, 22));
+	sprite.setPosition(x + (w - 200)/2 + 81, y + h/2 + 24);
+	window.draw(sprite);
+
+	texture = loader.obtenirTexture("images/interface/logo temperature.png");
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setPosition(x + (w - 200)/2 + 170, y + h/2 + 20);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	// Chaleur dissipée
+
+	texte.setString(sf::String("Chaleur dissipée:"));
+	texte.setPosition(x, y + h - 35);
+	window.draw(texte);
+
+	wTexte = texte.getGlobalBounds().width;
+	texture = loader.obtenirTexture("images/interface/logo temperature.png");
+	sprite.setTexture(*texture);
+	sprite.setPosition(x + wTexte + 10, y + h - 37);
+	window.draw(sprite);
+
+	texte.setString(sf::String(float_to_string(m_chaleurDissipee)));
+	texte.setPosition(x + wTexte + 50, y + h - 40);
+	texte.setCharacterSize(30);
+	window.draw(texte);
 }
 
 

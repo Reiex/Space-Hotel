@@ -509,7 +509,7 @@ MenuDetailMachine::MenuDetailMachine(Loader& loader, sf::VideoMode const& resolu
 
 	float scaleX(float(resolution.width) / 1920.0), scaleY(float(resolution.height) / 1080.0);
 
-	setCoord(0, 0, 155 * scaleX, 1080 * scaleY);
-	m_spriteFond = sf::Sprite(*loader.obtenirTexture("images/interface/detail machine/fond.png"), sf::IntRect(0, 0, 155, 1080));
+	setCoord(0, 0, 504 * scaleX, 260 * scaleY);
+	m_spriteFond = sf::Sprite(*loader.obtenirTexture("images/interface/detail machine/fond.png"), sf::IntRect(0, 0, 504, 1080));
 	m_spriteFond.setPosition(0, 0);
 }

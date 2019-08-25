@@ -117,7 +117,7 @@ void Carte::afficher(sf::RenderWindow& window, std::vector<Salle*>& sallesPointe
 			}
 
 			m_salles[i]->afficher(m_loader, window, flags, m_temperature, machinePointee);
-			m_salles[i]->afficherNoeuds(window);
+			// m_salles[i]->afficherNoeuds(window);
 		}
 	}
 
@@ -388,7 +388,7 @@ void Carte::afficherRessources(sf::RenderWindow& window, Salle* sallePointee, Ma
 
 	if (m_menus[5]->estAffiche())
 	{
-		machinePointee->afficherDetails(window);
+		machinePointee->afficherDetails(window, m_loader);
 	}
 }
 
@@ -985,7 +985,7 @@ bool Carte::collisionSourisMenu(sf::RenderWindow const& window)
 {
 	for (int i(0); i < m_menus.size(); i++)
 	{
-		if (m_menus[i]->getClicBouton(window) != -1)
+		if (m_menus[i]->estAffiche() && m_menus[i]->collisionSouris(window))
 		{
 			return true;
 		}

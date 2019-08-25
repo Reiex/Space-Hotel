@@ -190,4 +190,14 @@ class SalleDeRefroidissement : public Salle
 };
 
 
+class PanneauRadiateur : public Salle
+{
+	public:
+
+		PanneauRadiateur(Loader& loader);
+
+		void effectuerRotation(Loader& loader);
+};
+
+
 #endif // SALLE_H_INCLUDED

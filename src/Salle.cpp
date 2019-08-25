@@ -1845,3 +1845,18 @@ void SalleDeRefroidissement::effectuerRotation(Loader& loader)
 
 	m_machines[0]->effectuerRotation(loader);
 }
+
+
+// FONCTIONS MEMBRES DE LA CLASSE PANNEAU_RADIATEUR
+
+
+PanneauRadiateur::PanneauRadiateur(Loader& loader)
+{
+
+}
+
+
+void PanneauRadiateur::effectuerRotation(Loader& loader)
+{
+
+}

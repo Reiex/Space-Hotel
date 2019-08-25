@@ -2,7 +2,6 @@
 #define INTERFACE_H_INCLUDED
 
 #include "Connexion.h"
-#include "fonctions.h"
 
 
 // FENETRES
