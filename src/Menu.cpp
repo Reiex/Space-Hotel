@@ -340,20 +340,45 @@ MenuCreationSalle::MenuCreationSalle(Loader& loader, sf::VideoMode const& resolu
 
 	std::string chainesDescriptions[12] = {
 		"Couloir I\nSalle vide.",
+
 		"Couloir T\nSalle vide.",
+
 		"Couloir L\nSalle vide.",
+
 		"Couloir X\nSalle vide.",
 
-		"Salle des batteries\nSalle munie d'accumulateurs permettant de stocker l'électricité produite en surplus.",
-		"Centrale électrique\nSalle munie d'un transformateur électrique et de panneaux solaires.\nPermet de produire l'électricité qui sera ensuite consommée par les autres salles.",
-		"Panneau solaire\nPeut être attaché à une centrale électrique.\nProduit de l'électricité tant que le soleil l'éclaire.",
-		"Pile radioisotopique\nPeut être attaché à une centrale électrique.\nProduit de l'électricité en continu, mais à un rendement moins élevé que les panneaux solaires.",
-		
-		"Réserve d'eau\nSalle permettant de stocker séparément de l'eau propre et de l'eau usée.",
-		"Salle de traitement des eaux usées\nSalle permettant de transformer l'eau usée en eau propre.",
 
-		"Salle de refroidissement\nPermet à la station de ne pas surchauffer.",
-		"Panneau radiateur\nPeut être attaché à une salle de refroidissement pour augmenter son efficacité."
+		"Salle des batteries\n"
+		"Salle munie d'accumulateurs permettant de stocker l'électricité produite en surplus.",
+
+		"Centrale électrique\n"
+		"Salle munie d'un transformateur électrique et de panneaux solaires.\n"
+		"Permet de produire l'électricité qui sera ensuite consommée par les autres salles.",
+
+		"Panneau solaire\n"
+		"Peut être attaché à une centrale électrique.\n"
+		"Produit de l'électricité tant que le soleil l'éclaire.\n"
+		"Cette salle est une impasse, elle ne peut être connectée qu'à une seule autre salle.",
+
+		"Pile radioisotopique\n"
+		"Peut être attaché à une centrale électrique.\n"
+		"Produit de l'électricité en continu, mais à un rendement moins élevé que les panneaux solaires.\n"
+		"Cette salle est une impasse, elle ne peut être connectée qu'à une seule autre salle.",
+		
+
+		"Réserve d'eau\n"
+		"Salle permettant de stocker séparément de l'eau propre et de l'eau usée.",
+
+		"Salle de traitement des eaux usées\n"
+		"Salle permettant de transformer l'eau usée en eau propre.",
+
+
+		"Salle de refroidissement\n"
+		"Permet à la station de ne pas surchauffer.",
+
+		"Panneau radiateur\n"
+		"Peut être attaché à une salle de refroidissement pour augmenter son efficacité.\n"
+		"Cette salle est une impasse, elle ne peut être connectée qu'à une seule autre salle."
 	};
 
 	for (int i(0); i < 12; i++)

@@ -77,6 +77,7 @@ class Salle: public Entite
 		float m_chaleurDissipee;
 
 		int m_positionRotation;
+		bool m_impasse;
         std::vector<Salle*> m_voisines;
         std::vector<Connexion> m_connexions;
 		bool m_root;

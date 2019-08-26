@@ -378,7 +378,14 @@ void Carte::afficherRessources(sf::RenderWindow& window, Salle* sallePointee, Ma
 		sprite.setPosition(15, 287);
 		window.draw(sprite);
 
-		chaine = float_to_string(sallePointee->getChaleurDissipee());
+		if (sallePointee->getPanneElectrique())
+		{
+			chaine = "0 !";
+		}
+		else
+		{
+			chaine = float_to_string(sallePointee->getChaleurDissipee());
+		}
 		texte.setString(sf::String(chaine));
 		texte.setPosition(50, 285);
 		window.draw(texte);
@@ -783,6 +790,15 @@ float Carte::chaleurDissipeeMachines() const
 
 void Carte::gererTemperature(float dt)
 {
+	m_chaleurDissipee = 0;
+	for (int i(0); i < m_salles.size(); i++)
+	{
+		if (!m_salles[i]->getPanneElectrique())
+		{
+			m_chaleurDissipee += m_salles[i]->getChaleurDissipee();
+		}
+	}
+
 	float temperature(15);
 	float chaleurDissipee(m_chaleurDissipee + chaleurDissipeeMachines());
 	float energieConso(m_energieConso + energieConsoMachines());
@@ -795,7 +811,7 @@ void Carte::gererTemperature(float dt)
 	if (temperature != m_temperature)
 	{
 		m_temperature += dt * (temperature - m_temperature) / 2;
-		if (!(m_temperature - temperature > 0.01 || temperature - m_temperature > 0.01))
+		if (!(m_temperature - temperature > 0.01f || temperature - m_temperature > 0.01f))
 		{
 			m_temperature = temperature;
 		}

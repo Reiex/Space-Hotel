@@ -10,6 +10,7 @@ float const Salle::DistanceFavorableConnexion(40);
 Salle::Salle()
 {
 	m_root = false;
+	m_impasse = false;
 
 	m_energieConso = 1;
 	m_energieProduite = 0;
@@ -189,6 +190,11 @@ void Salle::effectuerRotation(Loader& loader)
 
 bool Salle::essayerConnecterSalle(Salle& nouvelleSalle) const
 {
+	if (m_impasse)
+	{
+		return false;
+	}
+
 	// Rechercher une connexion libre suffisamment proche d'une autre
 
 	float d_min(DistanceFavorableConnexion + 1), d(DistanceFavorableConnexion + 1);
@@ -1523,6 +1529,8 @@ void CentraleElectrique::effectuerRotation(Loader& loader)
 
 PanneauSolaire::PanneauSolaire(Loader& loader)
 {
+	m_impasse = true;
+
 	m_energieSolaireProduite = 40;
 
 	m_positionRotation = Salle::Orientation::Horizontale;
@@ -1603,6 +1611,8 @@ void PanneauSolaire::effectuerRotation(Loader& loader)
 
 PileRadioIsotopique::PileRadioIsotopique(Loader& loader)
 {
+	m_impasse = true;
+
 	m_energieProduite = 20;
 
 	m_positionRotation = Salle::Orientation::Haut;
@@ -1882,6 +1892,8 @@ void SalleDeRefroidissement::effectuerRotation(Loader& loader)
 
 PanneauRadiateur::PanneauRadiateur(Loader& loader)
 {
+	m_impasse = true;
+
 	m_energieConso = 2;
 	m_chaleurDissipee = 10;
 
