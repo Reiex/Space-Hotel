@@ -906,6 +906,9 @@ void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& s
 			case 10:
 				nouvelleSalle = new SalleDeRefroidissement(m_loader);
 				break;
+			case 11:
+				nouvelleSalle = new PanneauRadiateur(m_loader);
+				break;
 			default:
 				break;
 		}

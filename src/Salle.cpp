@@ -4,7 +4,7 @@
 // FONCTIONS MEMBRES DE LA CLASSE SALLE
 
 int const Salle::NombreDeFlags(4);
-float const Salle::DistanceFavorableConnexion(30);
+float const Salle::DistanceFavorableConnexion(40);
 
 
 Salle::Salle()
@@ -1563,12 +1563,12 @@ void PanneauSolaire::effectuerRotation(Loader& loader)
 
 		Connexion cGauche, cDroite;
 
-		cGauche.setCoord(0, (m_h - 76) / 2, 16, 76);
+		cGauche.setCoord(0, (m_h - 10) / 2, 16, 10);
 		cGauche.setDirection(Connexion::Direction::Gauche);
 		cGauche.setType(Connexion::Type::PanneauSolaire);
 		m_connexions[0] = cGauche;
 
-		cDroite.setCoord(m_w - 16, (m_h - 76) / 2, 16, 76);
+		cDroite.setCoord(m_w - 16, (m_h - 10) / 2, 16, 10);
 		cDroite.setDirection(Connexion::Direction::Droite);
 		cDroite.setType(Connexion::Type::PanneauSolaire);
 		m_connexions[1] = cDroite;
@@ -1585,12 +1585,12 @@ void PanneauSolaire::effectuerRotation(Loader& loader)
 
 		Connexion cBas, cHaut;
 
-		cBas.setCoord((m_w - 76) / 2, m_h - 16, 76, 16);
+		cBas.setCoord((m_w - 10) / 2, m_h - 16, 10, 16);
 		cBas.setDirection(Connexion::Direction::Bas);
 		cBas.setType(Connexion::Type::PanneauSolaire);
 		m_connexions[0] = cBas;
 
-		cHaut.setCoord((m_w - 76) / 2, 0, 76, 16);
+		cHaut.setCoord((m_w - 10) / 2, 0, 10, 16);
 		cHaut.setDirection(Connexion::Direction::Haut);
 		cHaut.setType(Connexion::Type::PanneauSolaire);
 		m_connexions[1] = cHaut;
@@ -1757,7 +1757,7 @@ SalleDeRefroidissement::SalleDeRefroidissement(Loader& loader)
 
 	// Connexions
 
-	Connexion cBas, cHaut;
+	Connexion cBas, cHaut, cGauche, cDroite;
 
 	cBas.setCoord((m_w - 76)/2, m_h - 16, 76, 16);
 	cBas.setDirection(Connexion::Direction::Bas);
@@ -1768,6 +1768,16 @@ SalleDeRefroidissement::SalleDeRefroidissement(Loader& loader)
 	cHaut.setDirection(Connexion::Direction::Haut);
 	cHaut.setNoeud(noeudConnexionHaut);
 	m_connexions.push_back(cHaut);
+
+	cGauche.setCoord(0, (m_h - 10) / 2, 45, 10);
+	cGauche.setDirection(Connexion::Direction::Gauche);
+	cGauche.setType(Connexion::Type::PanneauRadiateur);
+	m_connexions.push_back(cGauche);
+
+	cDroite.setCoord(m_w - 36, (m_h - 10) / 2, 36, 10);
+	cDroite.setDirection(Connexion::Direction::Droite);
+	cDroite.setType(Connexion::Type::PanneauRadiateur);
+	m_connexions.push_back(cDroite);
 
 	// Terminal radiateur
 
@@ -1798,7 +1808,7 @@ void SalleDeRefroidissement::effectuerRotation(Loader& loader)
 
 		// Connexions
 
-		Connexion cGauche, cDroite;
+		Connexion cGauche, cDroite, cHaut, cBas;
 
 		cGauche.setCoord(0, (m_h - 76)/2, 16, 76);
 		cGauche.setDirection(Connexion::Direction::Gauche);
@@ -1809,6 +1819,16 @@ void SalleDeRefroidissement::effectuerRotation(Loader& loader)
 		cDroite.setDirection(Connexion::Direction::Droite);
 		cDroite.setNoeud(m_noeuds[3]);
 		m_connexions[1] = cDroite;
+
+		cHaut.setCoord((m_w - 10)/2, 0, 10, 36);
+		cHaut.setDirection(Connexion::Direction::Haut);
+		cHaut.setType(Connexion::Type::PanneauRadiateur);
+		m_connexions[2] = cHaut;
+
+		cBas.setCoord((m_w - 10)/2, m_h - 45, 10, 45);
+		cBas.setDirection(Connexion::Direction::Bas);
+		cBas.setType(Connexion::Type::PanneauRadiateur);
+		m_connexions[3] = cBas;
 	}
 	else
 	{
@@ -1830,7 +1850,7 @@ void SalleDeRefroidissement::effectuerRotation(Loader& loader)
 
 		// Connexions
 
-		Connexion cBas, cHaut;
+		Connexion cBas, cHaut, cGauche, cDroite;
 
 		cBas.setCoord((m_w - 76)/2, m_h - 16, 76, 16);
 		cBas.setDirection(Connexion::Direction::Bas);
@@ -1841,6 +1861,16 @@ void SalleDeRefroidissement::effectuerRotation(Loader& loader)
 		cHaut.setDirection(Connexion::Direction::Haut);
 		cHaut.setNoeud(m_noeuds[3]);
 		m_connexions[1] = cHaut;
+
+		cGauche.setCoord(0, (m_h - 10) / 2, 45, 10);
+		cGauche.setDirection(Connexion::Direction::Gauche);
+		cGauche.setType(Connexion::Type::PanneauRadiateur);
+		m_connexions[2] = cGauche;
+
+		cDroite.setCoord(m_w - 36, (m_h - 10) / 2, 36, 10);
+		cDroite.setDirection(Connexion::Direction::Droite);
+		cDroite.setType(Connexion::Type::PanneauRadiateur);
+		m_connexions[3] = cDroite;
 	}
 
 	m_machines[0]->effectuerRotation(loader);
@@ -1852,11 +1882,77 @@ void SalleDeRefroidissement::effectuerRotation(Loader& loader)
 
 PanneauRadiateur::PanneauRadiateur(Loader& loader)
 {
+	m_energieConso = 2;
+	m_chaleurDissipee = 10;
 
+	m_positionRotation = Salle::Orientation::Horizontale;
+
+	m_textureSalle = loader.obtenirTexture("images/panneau radiateur/horizontal/salle.png");
+	m_textureConnexions = loader.obtenirTexture("images/panneau radiateur/horizontal/connexions.png");
+
+	m_w = (m_textureSalle->getSize()).x;
+	m_h = (m_textureSalle->getSize()).y;
+	m_x = -m_w / 2;
+	m_y = -m_h / 2;
+
+	Connexion cGauche, cDroite;
+
+	cGauche.setCoord(0, (m_h - 10) / 2, 16, 10);
+	cGauche.setDirection(Connexion::Direction::Gauche);
+	cGauche.setType(Connexion::Type::PanneauRadiateur);
+	m_connexions.push_back(cGauche);
+
+	cDroite.setCoord(m_w - 16, (m_h - 10) / 2, 16, 10);
+	cDroite.setDirection(Connexion::Direction::Droite);
+	cDroite.setType(Connexion::Type::PanneauRadiateur);
+	m_connexions.push_back(cDroite);
 }
 
 
 void PanneauRadiateur::effectuerRotation(Loader& loader)
 {
+	if (m_positionRotation == Salle::Orientation::Verticale)
+	{
+		m_positionRotation = Salle::Orientation::Horizontale;
 
+		m_textureSalle = loader.obtenirTexture("images/panneau radiateur/horizontal/salle.png");
+		m_textureConnexions = loader.obtenirTexture("images/panneau radiateur/horizontal/connexions.png");
+
+		m_w = (m_textureSalle->getSize()).x;
+		m_h = (m_textureSalle->getSize()).y;
+
+		Connexion cGauche, cDroite;
+
+		cGauche.setCoord(0, (m_h - 10) / 2, 16, 10);
+		cGauche.setDirection(Connexion::Direction::Gauche);
+		cGauche.setType(Connexion::Type::PanneauRadiateur);
+		m_connexions[0] = cGauche;
+
+		cDroite.setCoord(m_w - 16, (m_h - 10) / 2, 16, 10);
+		cDroite.setDirection(Connexion::Direction::Droite);
+		cDroite.setType(Connexion::Type::PanneauRadiateur);
+		m_connexions[1] = cDroite;
+	}
+	else
+	{
+		m_positionRotation = Salle::Orientation::Verticale;
+
+		m_textureSalle = loader.obtenirTexture("images/panneau radiateur/vertical/salle.png");
+		m_textureConnexions = loader.obtenirTexture("images/panneau radiateur/vertical/connexions.png");
+
+		m_w = (m_textureSalle->getSize()).x;
+		m_h = (m_textureSalle->getSize()).y;
+
+		Connexion cBas, cHaut;
+
+		cBas.setCoord((m_w - 10) / 2, m_h - 16, 10, 16);
+		cBas.setDirection(Connexion::Direction::Bas);
+		cBas.setType(Connexion::Type::PanneauRadiateur);
+		m_connexions[0] = cBas;
+
+		cHaut.setCoord((m_w - 10) / 2, 0, 10, 16);
+		cHaut.setDirection(Connexion::Direction::Haut);
+		cHaut.setType(Connexion::Type::PanneauRadiateur);
+		m_connexions[1] = cHaut;
+	}
 }

@@ -9,7 +9,7 @@ class Connexion: public Entite
 {
     public:
 		
-		enum Type {Standard, PanneauSolaire};
+		enum Type {Standard, PanneauSolaire, PanneauRadiateur};
 		enum Direction {Haut = 1, Bas = -Haut, Droite = 2, Gauche = -Droite};
 
 		Connexion();
