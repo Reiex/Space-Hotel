@@ -29,7 +29,7 @@ Carte::Carte(sf::VideoMode const& resolution)
 	for (int i(0); i < 10; i++)
 	{
 		m_personnages.push_back(new Personnage(m_salles[0]->getNoeudNormal()));
-		if (rand() % 3 == 0)
+		if (rand() % 2 == 0)
 		{
 			m_ressources.push_back(new Ressource(Ressource::Type::Eau));
 			m_personnages[i]->deposerRessource(m_ressources[m_ressources.size() - 1]);
@@ -380,7 +380,7 @@ void Carte::afficherRessources(sf::RenderWindow& window, Salle* sallePointee, Ma
 
 		if (sallePointee->getPanneElectrique())
 		{
-			chaine = "0 !";
+			chaine = "0 (" + float_to_string(sallePointee->getChaleurDissipee()) + ")";
 		}
 		else
 		{
@@ -395,7 +395,23 @@ void Carte::afficherRessources(sf::RenderWindow& window, Salle* sallePointee, Ma
 
 	if (m_menus[5]->estAffiche())
 	{
-		machinePointee->afficherDetails(window, m_loader);
+		Salle* salleMachine(m_salles[0]);
+		for (int i(0); i < m_salles.size(); i++)
+		{
+			std::vector<Machine*>* machines(m_salles[i]->getMachines());
+
+			for (int j(0); j < machines->size(); j++)
+			{
+				if ((*machines)[j] == machinePointee)
+				{
+					salleMachine = m_salles[i];
+					i = m_salles.size();
+					break;
+				}
+			}
+		}
+
+		machinePointee->afficherDetails(window, m_loader, salleMachine->getPanneElectrique());
 	}
 }
 
@@ -507,10 +523,12 @@ void Carte::gererIAPersonnages()
 			{
 				// SE DEPLACER VERS UNE TÂCHE
 
-				// Mettre la ressource tenue dans une machine
+				// Se débarasser de la ressource tenue
 
 				if (ressourcePersonnage != 0)
 				{
+					// Mettre la ressource tenue dans une machine qui en a besoin
+
 					for (int j(0); j < m_salles.size(); j++)
 					{
 						std::vector<Machine*>* machines(m_salles[j]->getMachines());
@@ -526,7 +544,29 @@ void Carte::gererIAPersonnages()
 							}
 						}
 					}
+
+					// Mettre la ressource tenue dans une machine qui n'en a pas besoin
+
+					if (!m_personnages[i]->estOccupe())
+					{
+						for (int j(0); j < m_salles.size(); j++)
+						{
+							std::vector<Machine*>* machines(m_salles[j]->getMachines());
+
+							for (int k(0); k < machines->size(); k++)
+							{
+								if ((*machines)[k]->getNoeudProche()->estLibre() && (*machines)[k]->ressourceDeposable(ressourcePersonnage))
+								{
+									(*machines)[k]->getNoeudProche()->setOccupe(true);
+									m_personnages[i]->ajusterTrajectoire((*machines)[k]->getNoeudProche());
+									j = m_salles.size();
+									break;
+								}
+							}
+						}
+					}
 				}
+
 			}
 
 			// S'il n'y a aucune réelle tâche disponnible
@@ -778,10 +818,7 @@ float Carte::chaleurDissipeeMachines() const
 
 	for (int i(0); i < m_salles.size(); i++)
 	{
-		if (!m_salles[i]->getPanneElectrique())
-		{
-			chaleur += m_salles[i]->getChaleurDissipeeMachines();
-		}
+		chaleur += m_salles[i]->getChaleurDissipeeMachines();
 	}
 
 	return chaleur;
@@ -918,6 +955,9 @@ void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& s
 				break;
 			case 7:
 				nouvelleSalle = new PileRadioIsotopique(m_loader);
+				break;
+			case 8:
+				nouvelleSalle = new ReserveEau(m_loader);
 				break;
 			case 10:
 				nouvelleSalle = new SalleDeRefroidissement(m_loader);

@@ -181,6 +181,16 @@ class PileRadioIsotopique : public Salle
 };
 
 
+class ReserveEau : public Salle
+{
+	public:
+
+		ReserveEau(Loader& loader);
+
+		void effectuerRotation(Loader& loader);
+};
+
+
 class SalleDeRefroidissement : public Salle
 {
 	public:

@@ -101,15 +101,15 @@ class Machine : public Conteneur, public Entite
 		static Entite const SurfaceDessinDetails;
 
 		Machine(int nbEntrees, int nbSorties);
-		virtual void faireFonctionner(float dt);
+		virtual void faireFonctionner(float dt, bool panneElectrique) = 0;
 
 		float getEnergieConso() const;
 		float getChaleurDissipee() const;
 
 		virtual void effectuerRotation(Loader& loader);
 
-		sf::Texture* getTexture();
-		virtual void afficherDetails(sf::RenderWindow& window, Loader& loader) const = 0;
+		virtual sf::Texture* getTexture();
+		virtual void afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const = 0;
 
 		void setNoeudProche(Noeud* noeud);
 		Noeud* getNoeudProche() const;
@@ -135,9 +135,29 @@ class TerminalRadiateur : public Machine
 	public:
 
 		TerminalRadiateur(Loader& loader);
-		void afficherDetails(sf::RenderWindow& window, Loader& loader) const;
-		void faireFonctionner(float dt);
+		void faireFonctionner(float dt, bool panneElectrique);
 		void effectuerRotation(Loader& loader);
+		void afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const;
+};
+
+
+class ReservoirEau : public Machine
+{
+	public:
+
+		ReservoirEau(Loader& loader);
+		void faireFonctionner(float dt, bool panneElectrique);
+		void effectuerRotation(Loader& loader);
+		sf::Texture* getTexture();
+		void afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const;
+
+	private:
+
+		sf::RenderTexture m_renderTexture;
+		sf::Texture m_textureFinale;
+		int m_remplissage[2];
+		bool m_vertical;
+
 };
 
 
