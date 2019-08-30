@@ -28,6 +28,7 @@ class Noeud : public Entite
 
 		int m_type;
 		bool m_occupe;
+		int m_cible;
 		std::vector<Noeud*> m_voisins;
 };
 
@@ -37,6 +38,7 @@ class Personnage : public Entite, public Conteneur
 	public:
 
 		enum Direction {Droite, Gauche};
+		enum Action{Ballade, DeposerRessource, PrendreRessource};
 
 		Personnage(Noeud* noeud);
 
@@ -51,6 +53,13 @@ class Personnage : public Entite, public Conteneur
 		void annulerTrajectoire();
 		bool traverseNoeud(Noeud* noeud);
 
+		Machine* getMachineCible() const;
+		void setMachineCible(Machine* machine);
+		int getEmplacementCible() const;
+		void setEmplacementCible(int emplacement);
+		Action getAction() const;
+		void setAction(Action action);
+
 		bool estOccupe();
 		float getAvancement() const;
 
@@ -61,6 +70,10 @@ class Personnage : public Entite, public Conteneur
 		Noeud* m_arrete[2];
 
 		int m_direction;
+
+		Machine* m_machineCible;
+		int m_emplacementCible;
+		Action m_action;
 };
 
 

@@ -5,7 +5,7 @@ Loader::Loader()
 {
 	// Chargement des images
 
-	int const nombreImages(88);
+	int const nombreImages(89);
 
 	std::string cheminsImages[nombreImages] = {
 		"images/fond/fond.png",
@@ -19,6 +19,7 @@ Loader::Loader()
 		"images/interface/logo eau.png",
 		"images/interface/logo temperature.png",
 		"images/interface/logo ressource manquante.png",
+		"images/interface/logo eau sale.png",
 
 		"images/interface/HUD gauche/fond.png",
 		"images/interface/HUD gauche/boutons.png",

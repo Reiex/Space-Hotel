@@ -137,11 +137,11 @@ void Salle::deplacerPersonnage(Personnage* personnage, float dt) const
 
 	if (pointArrivee[0] - pointDepart[0] != 0)
 	{
-		personnage->setCoord(personnage->getX(), personnage->getY() + 2 * sin(t * 2 * 3.1415926 * (distance / 100)));
+		personnage->setCoord(personnage->getX(), personnage->getY() + 2 * sin(t * 2.0f * 3.1415926f * (distance / 100)));
 	}
 	else if (pointArrivee[1] - pointDepart[1] != 0)
 	{
-		personnage->setCoord(personnage->getX() + 2 * sin(t * 2 * 3.1415926 * (distance / 100)), personnage->getY());
+		personnage->setCoord(personnage->getX() + 2 * sin(t * 2.0f * 3.1415926f * (distance / 100)), personnage->getY());
 	}
 
 	// Déplacer la ressource du personnage avec lui
@@ -149,7 +149,7 @@ void Salle::deplacerPersonnage(Personnage* personnage, float dt) const
 	if (personnage->ressourcePresente(0))
 	{
 		Ressource* ressource(personnage->getRessource(0));
-		ressource->setCoord(personnage->getX(), personnage->getY(), ressource->getX(), ressource->getY());
+		ressource->setCoord(personnage->getX(), personnage->getY(), ressource->getW(), ressource->getH());
 	}
 }
 
@@ -1259,7 +1259,7 @@ CouloirX::CouloirX(Loader& loader)
 SalleDeBatteries::SalleDeBatteries(Loader& loader)
 {
 	m_energieConso = 2;
-	m_capaciteAccu = 100;
+	m_capaciteAccu = 1000;
 
 	m_positionRotation = Salle::Orientation::Verticale;
 

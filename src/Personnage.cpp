@@ -175,6 +175,10 @@ Personnage::Personnage(Noeud* noeud) : Conteneur(1)
 	m_w = 64;
 	m_h = 64;
 	m_direction = Personnage::Direction::Droite;
+
+	m_machineCible = 0;
+	m_emplacementCible = 0;
+	m_action = Personnage::Ballade;
 }
 
 
@@ -292,6 +296,42 @@ bool Personnage::traverseNoeud(Noeud* noeud)
 	}
 
 	return traverse;
+}
+
+
+Machine* Personnage::getMachineCible() const
+{
+	return m_machineCible;
+}
+
+
+void Personnage::setMachineCible(Machine* machine)
+{
+	m_machineCible = machine;
+}
+
+
+int Personnage::getEmplacementCible() const
+{
+	return m_emplacementCible;
+}
+
+
+void Personnage::setEmplacementCible(int emplacement)
+{
+	m_emplacementCible = emplacement;
+}
+
+
+Personnage::Action Personnage::getAction() const
+{
+	return m_action;
+}
+
+
+void Personnage::setAction(Personnage::Action action)
+{
+	m_action = action;
 }
 
 

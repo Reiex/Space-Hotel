@@ -18,21 +18,29 @@ class Conteneur
 		
 		Conteneur(int nbEmplacement);
 
-		bool ressourceNecessaire(Ressource* ressource) const;
-		bool ressourceDeposable(Ressource* ressource) const;
-		void deposerRessource(Ressource* ressource);
+		bool ressourceNecessaire(Ressource* ressource, int i) const;
+		bool ressourceDeposable(Ressource* ressource, int i) const;
+		void deposerRessource(Ressource* ressource, int i);
+
+		int getTaille() const;
 
 		bool ressourcePresente(int i) const;
+		bool ressourceDisponnible(int i) const;
 		int getTypeRessource(int i) const;
 
 		Ressource* getRessource(int i);
 		void retirerRessource(Ressource* ressource);
+
+		void reserverEmplacement(int i);
+		void libererEmplacement(int i);
+		bool emplacementLibre(int i) const;
 
 		~Conteneur();
 
 	protected:
 
 		std::vector<EmplacementRessource> m_emplacements;
+		std::vector<bool> m_masqueUtilisation;
 };
 
 
@@ -67,7 +75,7 @@ class Ressource : public Entite
 {
 	public:
 
-		enum Type {Eau};
+		enum Type {Eau, EauSale};
 		static int const nbTypes;
 		static std::string const cheminsTypes[];
 

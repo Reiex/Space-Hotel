@@ -29,11 +29,8 @@ Carte::Carte(sf::VideoMode const& resolution)
 	for (int i(0); i < 10; i++)
 	{
 		m_personnages.push_back(new Personnage(m_salles[0]->getNoeudNormal()));
-		if (rand() % 2 == 0)
-		{
-			m_ressources.push_back(new Ressource(Ressource::Type::Eau));
-			m_personnages[i]->deposerRessource(m_ressources[m_ressources.size() - 1]);
-		}
+		m_ressources.push_back(new Ressource(rand() % 2));
+		m_personnages[i]->deposerRessource(m_ressources[m_ressources.size() - 1], 0);
 	}
 
 	// Initialiser les ressources
@@ -131,7 +128,7 @@ void Carte::afficher(sf::RenderWindow& window, std::vector<Salle*>& sallesPointe
 			sf::Texture* texture(m_loader.obtenirTexture(Ressource::cheminsTypes[type]));
 			sf::Sprite sprite(*texture);
 			sf::Vector2u taille(texture->getSize());
-			sprite.setScale(23 / taille.x, 23 / taille.y);
+			sprite.setScale(23.0 / taille.x, 23.0 / taille.y);
 			sprite.setPosition(m_ressources[i]->getX(), m_ressources[i]->getY());
 
 			window.draw(sprite);
@@ -481,109 +478,219 @@ void Carte::gererPersonnages(float dt)
 
 void Carte::gererIAPersonnages()
 {
+
+	// Regarder s'il faut activer l'IA
+
+	bool activer(false);
 	for (int i(0); i < m_personnages.size(); i++)
 	{
-		/*
-			Une tache = Un noeud réservé /!\ Sauf pour les déplacements sans but
-			Une tache commencée = Une tache finie
-		*/
+		activer = activer || (!m_personnages[i]->estOccupe());
+	}
+
+	if (!activer)
+	{
+		return;
+	}
+
+	// Finir une tâche pour laquelle on s'est déplacé
+
+	for (int i(0); i < m_personnages.size(); i++)
+	{
+		if (!m_personnages[i]->estOccupe())
+		{
+			Machine* machineCible(m_personnages[i]->getMachineCible());
+			Ressource* ressourcePersonnage(m_personnages[i]->getRessource(0));
+			int emplacement(m_personnages[i]->getEmplacementCible());
+
+			if (m_personnages[i]->getAction() == Personnage::Action::DeposerRessource)
+			{
+				machineCible->deposerRessource(ressourcePersonnage, emplacement);
+				m_personnages[i]->retirerRessource(ressourcePersonnage);
+				machineCible->libererEmplacement(emplacement);
+			}
+			else if (m_personnages[i]->getAction() == Personnage::Action::PrendreRessource)
+			{
+				Ressource* ressourcePrise(machineCible->getRessource(emplacement));
+				m_personnages[i]->deposerRessource(ressourcePrise, 0);
+				machineCible->retirerRessource(ressourcePrise);
+				machineCible->libererEmplacement(emplacement);
+			}
+		}
+	}
+
+	// Déterminer les endroits où une ressource est nécessaire/disponnible
+
+	struct Emplacement
+	{
+		Machine* machine;
+		int emplacement;
+	};
+
+	std::vector<std::vector<Emplacement>> ressourcesNecessaires, ressourcesDeposables, ressourcesDisponnibles;
+	Emplacement e;
+
+	for (int i(0); i < Ressource::nbTypes; i++)
+	{
+		ressourcesNecessaires.push_back(std::vector<Emplacement>());
+		ressourcesDeposables.push_back(std::vector<Emplacement>());
+		ressourcesDisponnibles.push_back(std::vector<Emplacement>());
+	}
+
+	for (int i(0); i < m_salles.size(); i++)
+	{
+		std::vector<Machine*>* machines(m_salles[i]->getMachines());
+		for (int j(0); j < machines->size(); j++)
+		{
+			for (int k(0); k < (*machines)[j]->getTaille(); k++)
+			{
+				if ((*machines)[j]->ressourcePresente(k) && (*machines)[j]->ressourceDisponnible(k))
+				{
+					e.machine = (*machines)[j];
+					e.emplacement = k;
+					ressourcesDisponnibles[(*machines)[j]->getTypeRessource(k)].push_back(e);
+				}
+
+				for (int l(0); l < Ressource::nbTypes; l++)
+				{
+					Ressource ressourceTest(l);
+					if ((*machines)[j]->ressourceNecessaire(&ressourceTest, k))
+					{
+						e.machine = (*machines)[j];
+						e.emplacement = k;
+						ressourcesNecessaires[l].push_back(e);
+					}
+					if ((*machines)[j]->ressourceDeposable(&ressourceTest, k))
+					{
+						e.machine = (*machines)[j];
+						e.emplacement = k;
+						ressourcesDeposables[l].push_back(e);
+					}
+				}
+			}
+		}
+	}
+
+	// Se déplacer vers une tâche
+
+	for (int i(0); i < m_personnages.size(); i++)
+	{
+		if (!m_personnages[i]->estOccupe())
+		{
+			Ressource* ressourcePersonnage(m_personnages[i]->getRessource(0));
+			Machine* machine;
+			int emplacement;
+
+			// Déposer sa ressource
+
+			if (ressourcePersonnage != 0)
+			{
+				int type(ressourcePersonnage->getType());
+
+				// Dans une machine qui en a besoin
+
+				if (ressourcesNecessaires[type].size() != 0)
+				{
+					machine = ressourcesNecessaires[type][0].machine;
+					emplacement = ressourcesNecessaires[type][0].emplacement;
+					ressourcesNecessaires.erase(ressourcesNecessaires.begin());
+
+					while (ressourcesNecessaires[type].size() != 0 && !machine->emplacementLibre(emplacement))
+					{
+						machine = ressourcesNecessaires[type][0].machine;
+						emplacement = ressourcesNecessaires[type][0].emplacement;
+						ressourcesNecessaires.erase(ressourcesNecessaires.begin());
+					}
+
+					if (machine->emplacementLibre(emplacement) && machine->ressourceNecessaire(ressourcePersonnage, emplacement))
+					{
+						machine->reserverEmplacement(emplacement);
+						m_personnages[i]->setMachineCible(machine);
+						m_personnages[i]->setEmplacementCible(emplacement);
+						m_personnages[i]->ajusterTrajectoire(machine->getNoeudProche());
+						m_personnages[i]->setAction(Personnage::Action::DeposerRessource);
+					}
+				}
+
+				// Dans une machine qui n'en a pas besoin
+
+				if (!m_personnages[i]->estOccupe() && ressourcesDeposables[type].size() != 0)
+				{
+					machine = ressourcesDeposables[type][0].machine;
+					emplacement = ressourcesDeposables[type][0].emplacement;
+					ressourcesDeposables.erase(ressourcesDeposables.begin());
+
+					while (ressourcesDeposables[type].size() != 0 && !machine->emplacementLibre(emplacement))
+					{
+						machine = ressourcesDeposables[type][0].machine;
+						emplacement = ressourcesDeposables[type][0].emplacement;
+						ressourcesDeposables.erase(ressourcesDeposables.begin());
+					}
+
+					if (machine->emplacementLibre(emplacement) && machine->ressourceDeposable(ressourcePersonnage, emplacement))
+					{
+						machine->reserverEmplacement(emplacement);
+						m_personnages[i]->setMachineCible(machine);
+						m_personnages[i]->setEmplacementCible(emplacement);
+						m_personnages[i]->ajusterTrajectoire(machine->getNoeudProche());
+						m_personnages[i]->setAction(Personnage::Action::DeposerRessource);
+					}
+				}
+			}
+
+			// Aller prendre une ressource si nécessaire
+
+			else
+			{
+				int type(0);
+				bool typeTrouve(false);
+				while (type < Ressource::nbTypes && !typeTrouve)
+				{
+					while (ressourcesNecessaires[type].size() != 0 && !ressourcesNecessaires[type][0].machine->emplacementLibre(ressourcesNecessaires[type][0].emplacement))
+					{
+						ressourcesNecessaires[type].erase(ressourcesNecessaires[type].begin());
+					}
+
+					while (ressourcesDisponnibles[type].size() != 0 && !ressourcesDisponnibles[type][0].machine->emplacementLibre(ressourcesDisponnibles[type][0].emplacement))
+					{
+						ressourcesDisponnibles[type].erase(ressourcesDisponnibles[type].begin());
+					}
+
+					if (ressourcesNecessaires[type].size() == 0 || ressourcesDisponnibles[type].size() == 0)
+					{
+						type++;
+					}
+					else
+					{
+						typeTrouve = true;
+					}
+				}
+
+				if (typeTrouve)
+				{
+					machine = ressourcesDisponnibles[type][0].machine;
+					emplacement = ressourcesDisponnibles[type][0].emplacement;
+					machine->reserverEmplacement(emplacement);
+					m_personnages[i]->setMachineCible(machine);
+					m_personnages[i]->setEmplacementCible(emplacement);
+					m_personnages[i]->ajusterTrajectoire(machine->getNoeudProche());
+					m_personnages[i]->setAction(Personnage::Action::PrendreRessource);
+				}
+			}
+		}
 
 		if (!m_personnages[i]->estOccupe())
 		{
-			Noeud* butPrecedent(m_personnages[i]->getArrivee());
-			Ressource* ressourcePersonnage(m_personnages[i]->getRessource(0));
+			Noeud* noeudCible(0);
+			int salleCible(0);
 
-			if (!butPrecedent->estLibre())
+			while (noeudCible == 0)
 			{
-				// EXECUTER LA TÂCHE POUR LAQUELLE ON S'EST DEPLACE
-
-				// Mettre la ressource tenue dans une machine
-
-				if (ressourcePersonnage != 0)
-				{
-					for (int j(0); j < m_salles.size(); j++)
-					{
-						std::vector<Machine*>* machines(m_salles[j]->getMachines());
-
-						for (int k(0); k < machines->size(); k++)
-						{
-							if ((*machines)[k]->getNoeudProche() == butPrecedent)
-							{
-								(*machines)[k]->deposerRessource(ressourcePersonnage);
-								m_personnages[i]->retirerRessource(ressourcePersonnage);
-								(*machines)[k]->getNoeudProche()->setOccupe(false);
-								j = m_salles.size();
-								break;
-							}
-						}
-					}
-				}
-			}
-			else
-			{
-				// SE DEPLACER VERS UNE TÂCHE
-
-				// Se débarasser de la ressource tenue
-
-				if (ressourcePersonnage != 0)
-				{
-					// Mettre la ressource tenue dans une machine qui en a besoin
-
-					for (int j(0); j < m_salles.size(); j++)
-					{
-						std::vector<Machine*>* machines(m_salles[j]->getMachines());
-
-						for (int k(0); k < machines->size(); k++)
-						{
-							if ((*machines)[k]->getNoeudProche()->estLibre() && (*machines)[k]->ressourceNecessaire(ressourcePersonnage))
-							{
-								(*machines)[k]->getNoeudProche()->setOccupe(true);
-								m_personnages[i]->ajusterTrajectoire((*machines)[k]->getNoeudProche());
-								j = m_salles.size();
-								break;
-							}
-						}
-					}
-
-					// Mettre la ressource tenue dans une machine qui n'en a pas besoin
-
-					if (!m_personnages[i]->estOccupe())
-					{
-						for (int j(0); j < m_salles.size(); j++)
-						{
-							std::vector<Machine*>* machines(m_salles[j]->getMachines());
-
-							for (int k(0); k < machines->size(); k++)
-							{
-								if ((*machines)[k]->getNoeudProche()->estLibre() && (*machines)[k]->ressourceDeposable(ressourcePersonnage))
-								{
-									(*machines)[k]->getNoeudProche()->setOccupe(true);
-									m_personnages[i]->ajusterTrajectoire((*machines)[k]->getNoeudProche());
-									j = m_salles.size();
-									break;
-								}
-							}
-						}
-					}
-				}
-
+				salleCible = rand() % m_salles.size();
+				noeudCible = m_salles[salleCible]->getNoeudNormal();
 			}
 
-			// S'il n'y a aucune réelle tâche disponnible
-
-			if (!m_personnages[i]->estOccupe())
-			{
-				Noeud* noeudCible(0);
-				int salleCible(0);
-
-				while (noeudCible == 0)
-				{
-					salleCible = rand() % m_salles.size();
-					noeudCible = m_salles[salleCible]->getNoeudNormal();
-				}
-
-				m_personnages[i]->ajusterTrajectoire(noeudCible);
-			}
+			m_personnages[i]->ajusterTrajectoire(noeudCible);
+			m_personnages[i]->setAction(Personnage::Action::Ballade);
 		}
 	}
 }

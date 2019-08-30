@@ -9,55 +9,48 @@ Conteneur::Conteneur(int nbEmplacements)
 	for (int i(0); i < nbEmplacements; i++)
 	{
 		m_emplacements.push_back(EmplacementRessource(true));
+		m_masqueUtilisation.push_back(true);
 	}
 }
 
 
-bool Conteneur::ressourceNecessaire(Ressource* ressource) const
+bool Conteneur::ressourceNecessaire(Ressource* ressource, int i) const
 {
-	for (int i(0); i < m_emplacements.size(); i++)
-	{
-		if (!m_emplacements[i].estOccupe() && m_emplacements[i].estAutorisee(ressource) && m_emplacements[i].ressourceNecessaire())
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return !m_emplacements[i].estOccupe() && m_emplacements[i].estAutorisee(ressource) && m_emplacements[i].ressourceNecessaire();
 }
 
 
-bool Conteneur::ressourceDeposable(Ressource* ressource) const
+bool Conteneur::ressourceDeposable(Ressource* ressource, int i) const
 {
-	for (int i(0); i < m_emplacements.size(); i++)
-	{
-		if (!m_emplacements[i].estOccupe() && m_emplacements[i].estAutorisee(ressource))
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return (!m_emplacements[i].estOccupe() && m_emplacements[i].estAutorisee(ressource));
 }
 
 
-void Conteneur::deposerRessource(Ressource* ressource)
+void Conteneur::deposerRessource(Ressource* ressource, int i)
 {
-	for (int i(0); i < m_emplacements.size(); i++)
+	if (!m_emplacements[i].estOccupe() && m_emplacements[i].estAutorisee(ressource))
 	{
-		if (!m_emplacements[i].estOccupe() && m_emplacements[i].estAutorisee(ressource))
-		{
-			m_emplacements[i].setRessource(ressource);
-			ressource->setConteneur(this);
-			break;
-		}
+		m_emplacements[i].setRessource(ressource);
+		ressource->setConteneur(this);
 	}
+}
+
+
+int Conteneur::getTaille() const
+{
+	return m_emplacements.size();
 }
 
 
 bool Conteneur::ressourcePresente(int i) const
 {
 	return (m_emplacements[i].getRessource() != 0);
+}
+
+
+bool Conteneur::ressourceDisponnible(int i) const
+{
+	return !m_emplacements[i].ressourceNecessaire();
 }
 
 
@@ -82,6 +75,24 @@ void Conteneur::retirerRessource(Ressource* ressource)
 			m_emplacements[i].setRessource(0);
 		}
 	}
+}
+
+
+void Conteneur::reserverEmplacement(int i)
+{
+	m_masqueUtilisation[i] = false;
+}
+
+
+void Conteneur::libererEmplacement(int i)
+{
+	m_masqueUtilisation[i] = true;
+}
+
+
+bool Conteneur::emplacementLibre(int i) const
+{
+	return m_masqueUtilisation[i];
 }
 
 
@@ -197,9 +208,10 @@ Ressource* EmplacementRessource::getRessource() const
 // FONCTIONS MEMBRES DE LA CLASSE RESSOURCE
 
 
-int const Ressource::nbTypes(1);
+int const Ressource::nbTypes(2);
 std::string const Ressource::cheminsTypes[Ressource::nbTypes] = {
-		"images/interface/logo eau.png"
+		"images/interface/logo eau.png",
+		"images/interface/logo eau sale.png"
 	};
 
 
@@ -256,7 +268,10 @@ void Ressource::setEtat(float etat)
 
 Ressource::~Ressource()
 {
-	m_conteneur->retirerRessource(this);
+	if (m_conteneur != 0)
+	{
+		m_conteneur->retirerRessource(this);
+	}
 }
 
 
@@ -524,9 +539,25 @@ ReservoirEau::ReservoirEau(Loader& loader) : Machine(20, 0)
 {
 	for (int i(0); i < Ressource::nbTypes; i++)
 	{
-		if (i != Ressource::Eau)
+		if (i != Ressource::Eau && i != Ressource::EauSale)
 		{
 			for (int j(0); j < 20; j++)
+			{
+				m_emplacements[j].interdireRessource(i);
+			}
+		}
+
+		if (i == Ressource::Eau)
+		{
+			for (int j(10); j < 20; j++)
+			{
+				m_emplacements[j].interdireRessource(i);
+			}
+		}
+
+		if (i == Ressource::EauSale)
+		{
+			for (int j(0); j < 10; j++)
 			{
 				m_emplacements[j].interdireRessource(i);
 			}
@@ -540,7 +571,7 @@ ReservoirEau::ReservoirEau(Loader& loader) : Machine(20, 0)
 
 	m_texture = loader.obtenirTexture("images/reserve eau/verticale/reservoirs.png");
 
-	m_energieConso = 2;
+	m_energieConso = 1;
 
 	m_renderTexture.create(m_w, m_h);
 	m_remplissage[0] = -1;
@@ -651,18 +682,18 @@ sf::Texture* ReservoirEau::getTexture()
 			sprite.setPosition(0, 0);
 			m_renderTexture.draw(sprite);
 
-			sprite.setTextureRect(sf::IntRect(15, 5, 67 * facteur[0], 42));
+			sprite.setTextureRect(sf::IntRect(15, 5, 67 * facteur[1], 42));
 			sprite.setPosition(15, 5);
 			m_renderTexture.draw(sprite);
 			sprite.setTextureRect(sf::IntRect(82, 0, 15, 52));
-			sprite.setPosition(15 + 67 * facteur[0], 0);
+			sprite.setPosition(15 + 67 * facteur[1], 0);
 			m_renderTexture.draw(sprite);
 
-			sprite.setTextureRect(sf::IntRect(15, 85, 67 * facteur[1], 42));
+			sprite.setTextureRect(sf::IntRect(15, 85, 67 * facteur[0], 42));
 			sprite.setPosition(15, 85);
 			m_renderTexture.draw(sprite);
 			sprite.setTextureRect(sf::IntRect(82, 80, 15, 52));
-			sprite.setPosition(15 + 67 * facteur[1], 80);
+			sprite.setPosition(15 + 67 * facteur[0], 80);
 			m_renderTexture.draw(sprite);
 		}
 
@@ -676,5 +707,108 @@ sf::Texture* ReservoirEau::getTexture()
 
 void ReservoirEau::afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const
 {
+	int x(SurfaceDessinDetails.getX()), y(SurfaceDessinDetails.getY()), w(SurfaceDessinDetails.getW()), h(SurfaceDessinDetails.getH());
 
+	sf::Texture* texture;
+	sf::Sprite sprite;
+	sf::Text texte;
+	texte.setFont(*(loader.getFont()));
+	texte.setFillColor(sf::Color(5, 15, 6));
+	texte.setCharacterSize(25);
+
+	/*
+		Consommation électrique: [] X
+
+		Réserve d'eau:
+
+			[] [] [] [] [] [] [] [] [] []
+
+		Réserve d'eau sale:
+
+			[] [] [] [] [] [] [] [] [] []
+	*/
+
+	// Consommation électrique
+
+	texte.setString(sf::String("Consommation électrique:"));
+	texte.setPosition(x, y + 5);
+	window.draw(texte);
+
+	int wTexte(texte.getGlobalBounds().width);
+	texture = loader.obtenirTexture("images/interface/logo electricite.png");
+	sprite.setTexture(*texture);
+	sprite.setPosition(x + wTexte + 10, y + 3);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	texte.setString(sf::String(float_to_string(m_energieConso)));
+	texte.setPosition(x + wTexte + 50, y);
+	texte.setCharacterSize(30);
+	window.draw(texte);
+
+	texte.setCharacterSize(25);
+
+	// Réserve d'eau
+
+	int nbEau(0);
+	texte.setString(sf::String("Réserve d'eau:"));
+	texte.setPosition(x, y + 35 + (h - 35 - 140)/3);
+	window.draw(texte);
+
+	for (int i(0); i < 10; i++)
+	{
+		nbEau += m_emplacements[i].estOccupe();
+	}
+
+	texture = loader.obtenirTexture("images/interface/logo eau.png");
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setScale(0.3, 0.3);
+	for (int i(0); i < nbEau; i++)
+	{
+		sprite.setPosition(x + (w - 390)/2 + 40*i, y + 35 + (h - 35 - 140)/3 + 40);
+		window.draw(sprite);
+	}
+
+	texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setScale(0.3, 0.3);
+	for (int i(nbEau); i < 10; i++)
+	{
+		sprite.setPosition(x + (w - 390)/2 + 40*i, y + 35 + (h - 35 - 140)/3 + 40);
+		window.draw(sprite);
+	}
+
+	// Réserve d'eau sale
+
+	nbEau = 0;
+	texte.setString(sf::String("Réserve d'eau sale:"));
+	texte.setPosition(x, y + 35 + 2*(h - 35 - 140)/3 + 70);
+	window.draw(texte);
+
+	for (int i(10); i < 20; i++)
+	{
+		nbEau += m_emplacements[i].estOccupe();
+	}
+
+	texture = loader.obtenirTexture("images/interface/logo eau sale.png");
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setScale(0.3, 0.3);
+	for (int i(0); i < nbEau; i++)
+	{
+		sprite.setPosition(x + (w - 390)/2 + 40*i, y + 35 + 2*(h - 35 - 140)/3 + 70 + 40);
+		window.draw(sprite);
+	}
+
+	texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setScale(0.3, 0.3);
+	for (int i(nbEau); i < 10; i++)
+	{
+		sprite.setPosition(x + (w - 390)/2 + 40*i, y + 35 + 2*(h - 35 - 140)/3 + 70 + 40);
+		window.draw(sprite);
+	}
 }
