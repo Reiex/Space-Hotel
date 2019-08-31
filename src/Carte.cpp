@@ -526,7 +526,7 @@ void Carte::gererIAPersonnages()
 		int emplacement;
 	};
 
-	std::vector<std::vector<Emplacement>> ressourcesNecessaires, ressourcesDeposables, ressourcesDisponnibles;
+	std::vector<std::vector<Emplacement>> ressourcesNecessaires, ressourcesDeposables, ressourcesDisponnibles, ressourcesEnTrop;
 	Emplacement e;
 
 	for (int i(0); i < Ressource::nbTypes; i++)
@@ -534,6 +534,7 @@ void Carte::gererIAPersonnages()
 		ressourcesNecessaires.push_back(std::vector<Emplacement>());
 		ressourcesDeposables.push_back(std::vector<Emplacement>());
 		ressourcesDisponnibles.push_back(std::vector<Emplacement>());
+		ressourcesEnTrop.push_back(std::vector<Emplacement>());
 	}
 
 	for (int i(0); i < m_salles.size(); i++)
@@ -548,6 +549,13 @@ void Carte::gererIAPersonnages()
 					e.machine = (*machines)[j];
 					e.emplacement = k;
 					ressourcesDisponnibles[(*machines)[j]->getTypeRessource(k)].push_back(e);
+				}
+
+				if ((*machines)[j]->ressourceEnTrop(k))
+				{
+					e.machine = (*machines)[j];
+					e.emplacement = k;
+					ressourcesEnTrop[(*machines)[j]->getTypeRessource(k)].push_back(e);
 				}
 
 				for (int l(0); l < Ressource::nbTypes; l++)
@@ -608,6 +616,7 @@ void Carte::gererIAPersonnages()
 						m_personnages[i]->setEmplacementCible(emplacement);
 						m_personnages[i]->ajusterTrajectoire(machine->getNoeudProche());
 						m_personnages[i]->setAction(Personnage::Action::DeposerRessource);
+						continue;
 					}
 				}
 
@@ -633,35 +642,81 @@ void Carte::gererIAPersonnages()
 						m_personnages[i]->setEmplacementCible(emplacement);
 						m_personnages[i]->ajusterTrajectoire(machine->getNoeudProche());
 						m_personnages[i]->setAction(Personnage::Action::DeposerRessource);
+						continue;
 					}
 				}
 			}
 
-			// Aller prendre une ressource si nécessaire
+			// Aller prendre une ressource
 
 			else
 			{
+				// Nettoyer les listes
+
 				int type(0);
 				bool typeTrouve(false);
-				while (type < Ressource::nbTypes && !typeTrouve)
+				while (type < Ressource::nbTypes)
 				{
 					while (ressourcesNecessaires[type].size() != 0 && !ressourcesNecessaires[type][0].machine->emplacementLibre(ressourcesNecessaires[type][0].emplacement))
 					{
 						ressourcesNecessaires[type].erase(ressourcesNecessaires[type].begin());
 					}
-
+					while (ressourcesDeposables[type].size() != 0 && !ressourcesDeposables[type][0].machine->emplacementLibre(ressourcesDeposables[type][0].emplacement))
+					{
+						ressourcesDeposables[type].erase(ressourcesDeposables[type].begin());
+					}
 					while (ressourcesDisponnibles[type].size() != 0 && !ressourcesDisponnibles[type][0].machine->emplacementLibre(ressourcesDisponnibles[type][0].emplacement))
 					{
 						ressourcesDisponnibles[type].erase(ressourcesDisponnibles[type].begin());
 					}
-
-					if (ressourcesNecessaires[type].size() == 0 || ressourcesDisponnibles[type].size() == 0)
+					while (ressourcesEnTrop[type].size() != 0 && !ressourcesEnTrop[type][0].machine->emplacementLibre(ressourcesEnTrop[type][0].emplacement))
 					{
-						type++;
+						ressourcesEnTrop[type].erase(ressourcesEnTrop[type].begin());
+					}
+					type++;
+				}
+
+				// S'il y a une ressource en trop qui est nécessaire ailleurs
+
+				type = 0;
+				typeTrouve = false;
+				while (type < Ressource::nbTypes && !typeTrouve)
+				{
+					if (ressourcesEnTrop[type].size() != 0 && ressourcesNecessaires[type].size() != 0)
+					{
+						typeTrouve = true;
 					}
 					else
 					{
+						type++;
+					}
+				}
+
+				if (typeTrouve)
+				{
+					machine = ressourcesEnTrop[type][0].machine;
+					emplacement = ressourcesEnTrop[type][0].emplacement;
+					machine->reserverEmplacement(emplacement);
+					m_personnages[i]->setMachineCible(machine);
+					m_personnages[i]->setEmplacementCible(emplacement);
+					m_personnages[i]->ajusterTrajectoire(machine->getNoeudProche());
+					m_personnages[i]->setAction(Personnage::Action::PrendreRessource);
+					continue;
+				}
+
+				// S'il y a une ressource disponnible qui est nécessaire ailleurs
+
+				type = 0;
+				typeTrouve = false;
+				while (type < Ressource::nbTypes && !typeTrouve)
+				{
+					if (ressourcesDisponnibles[type].size() != 0 && ressourcesNecessaires[type].size() != 0)
+					{
 						typeTrouve = true;
+					}
+					else
+					{
+						type++;
 					}
 				}
 
@@ -674,6 +729,35 @@ void Carte::gererIAPersonnages()
 					m_personnages[i]->setEmplacementCible(emplacement);
 					m_personnages[i]->ajusterTrajectoire(machine->getNoeudProche());
 					m_personnages[i]->setAction(Personnage::Action::PrendreRessource);
+					continue;
+				}
+
+				// S'il y a une ressource en trop qui est déposable ailleurs
+
+				type = 0;
+				typeTrouve = false;
+				while (type < Ressource::nbTypes && !typeTrouve)
+				{
+					if (ressourcesEnTrop[type].size() != 0 && ressourcesDeposables[type].size() != 0)
+					{
+						typeTrouve = true;
+					}
+					else
+					{
+						type++;
+					}
+				}
+
+				if (typeTrouve)
+				{
+					machine = ressourcesEnTrop[type][0].machine;
+					emplacement = ressourcesEnTrop[type][0].emplacement;
+					machine->reserverEmplacement(emplacement);
+					m_personnages[i]->setMachineCible(machine);
+					m_personnages[i]->setEmplacementCible(emplacement);
+					m_personnages[i]->ajusterTrajectoire(machine->getNoeudProche());
+					m_personnages[i]->setAction(Personnage::Action::PrendreRessource);
+					continue;
 				}
 			}
 		}
@@ -1065,6 +1149,9 @@ void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& s
 				break;
 			case 8:
 				nouvelleSalle = new ReserveEau(m_loader);
+				break;
+			case 9:
+				nouvelleSalle = new SalleTraitementEau(m_loader);
 				break;
 			case 10:
 				nouvelleSalle = new SalleDeRefroidissement(m_loader);

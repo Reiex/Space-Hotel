@@ -26,6 +26,7 @@ class Conteneur
 
 		bool ressourcePresente(int i) const;
 		bool ressourceDisponnible(int i) const;
+		bool ressourceEnTrop(int i) const;
 		int getTypeRessource(int i) const;
 
 		Ressource* getRessource(int i);
@@ -55,6 +56,7 @@ class EmplacementRessource
 		bool estAutorisee(Ressource* ressource) const;
 
 		void setEntree(bool entree);
+		bool getEntree() const;
 		void setRessourceNecessaire(bool necessaire);
 		bool estOccupe() const;
 		bool ressourceNecessaire() const;
@@ -81,6 +83,7 @@ class Ressource : public Entite
 
 		Ressource(int type);
 
+		void setType(int type);
 		int getType() const;
 
 		Conteneur* getConteneur() const;
@@ -138,17 +141,6 @@ class Machine : public Conteneur, public Entite
 // CLASSES POUR CHACUNE DES MACHINES
 
 
-class TerminalRadiateur : public Machine
-{
-	public:
-
-		TerminalRadiateur(Loader& loader);
-		void faireFonctionner(float dt, bool panneElectrique);
-		void effectuerRotation(Loader& loader);
-		void afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const;
-};
-
-
 class ReservoirEau : public Machine
 {
 	public:
@@ -166,6 +158,32 @@ class ReservoirEau : public Machine
 		int m_remplissage[2];
 		bool m_vertical;
 
+};
+
+
+class FiltreEau : public Machine
+{
+	public:
+
+		FiltreEau(Loader& loader);
+		void faireFonctionner(float dt, bool panneElectrique);
+		void effectuerRotation(Loader& loader);
+		void afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const;
+
+	private:
+
+		float m_avancement;
+};
+
+
+class TerminalRadiateur : public Machine
+{
+public:
+
+	TerminalRadiateur(Loader& loader);
+	void faireFonctionner(float dt, bool panneElectrique);
+	void effectuerRotation(Loader& loader);
+	void afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const;
 };
 
 

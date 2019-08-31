@@ -191,6 +191,16 @@ class ReserveEau : public Salle
 };
 
 
+class SalleTraitementEau : public Salle
+{
+	public:
+
+		SalleTraitementEau(Loader& loader);
+
+		void effectuerRotation(Loader& loader);
+};
+
+
 class SalleDeRefroidissement : public Salle
 {
 	public:

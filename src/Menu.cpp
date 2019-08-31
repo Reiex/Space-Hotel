@@ -367,10 +367,10 @@ MenuCreationSalle::MenuCreationSalle(Loader& loader, sf::VideoMode const& resolu
 		
 
 		"Réserve d'eau\n"
-		"Salle permettant de stocker séparément de l'eau propre et de l'eau usée.",
+		"Salle permettant de stocker séparément de l'eau propre et de l'eau sale.",
 
 		"Salle de traitement des eaux usées\n"
-		"Salle permettant de transformer l'eau usée en eau propre.",
+		"Salle permettant de transformer l'eau sale en eau propre.",
 
 
 		"Salle de refroidissement\n"

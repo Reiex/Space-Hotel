@@ -1728,8 +1728,6 @@ void PileRadioIsotopique::effectuerRotation(Loader& loader)
 
 ReserveEau::ReserveEau(Loader& loader)
 {
-	m_energieConso = 2;
-
 	m_positionRotation = Salle::Orientation::Verticale;
 
 	m_textureSalle = loader.obtenirTexture("images/reserve eau/verticale/salle.png");
@@ -1825,6 +1823,137 @@ void ReserveEau::effectuerRotation(Loader& loader)
 
 		m_textureSalle = loader.obtenirTexture("images/reserve eau/verticale/salle.png");
 		m_textureConnexions = loader.obtenirTexture("images/reserve eau/verticale/connexions.png");
+
+		m_w = (m_textureSalle->getSize()).x;
+		m_h = (m_textureSalle->getSize()).y;
+
+		// Noeuds
+
+		m_noeuds[0]->setCoord(m_w/2, m_h/2);
+		m_noeuds[1]->setCoord(m_w/2, m_h/2);
+
+		m_noeuds[2]->setCoord(m_w/2, m_h);
+		m_noeuds[3]->setCoord(m_w/2, 0);
+
+		// Connexions
+
+		Connexion cBas, cHaut;
+
+		cBas.setCoord((m_w - 76)/2, m_h - 16, 76, 16);
+		cBas.setDirection(Connexion::Direction::Bas);
+		cBas.setNoeud(m_noeuds[2]);
+		m_connexions[0] = cBas;
+
+		cHaut.setCoord((m_w - 76)/2, 0, 76, 16);
+		cHaut.setDirection(Connexion::Direction::Haut);
+		cHaut.setNoeud(m_noeuds[3]);
+		m_connexions[1] = cHaut;
+	}
+
+	m_machines[0]->effectuerRotation(loader);
+}
+
+
+// FONCTIONS MEMBRES DE LA CLASSE RESERVE_EAU
+
+
+SalleTraitementEau::SalleTraitementEau(Loader& loader)
+{
+	m_positionRotation = Salle::Orientation::Verticale;
+
+	m_textureSalle = loader.obtenirTexture("images/salle de traitement des eaux usees/verticale/salle.png");
+	m_textureConnexions = loader.obtenirTexture("images/salle de traitement des eaux usees/verticale/connexions.png");
+
+	m_w = (m_textureSalle->getSize()).x;
+	m_h = (m_textureSalle->getSize()).y;
+	m_x = -m_w / 2;
+	m_y = -m_h / 2;
+
+	// Noeuds
+
+	Noeud *noeudMilieu(new Noeud), *noeudMachine(new Noeud), *noeudConnexionHaut(new Noeud), *noeudConnexionBas(new Noeud);
+
+	noeudMilieu->setCoord(m_w/2, m_h/2);
+	noeudMilieu->setType(Noeud::Type::Normal);
+
+	noeudMachine->setCoord(m_w/2, m_h/2);
+	noeudMachine->connecter(noeudMilieu);
+	noeudMachine->setType(Noeud::Type::Machine);
+
+	noeudConnexionHaut->setCoord(m_w/2, 0);
+	noeudConnexionHaut->connecter(noeudMilieu);
+	noeudConnexionHaut->setType(Noeud::Type::Connexion);
+
+	noeudConnexionBas->setCoord(m_w/2, m_h);
+	noeudConnexionBas->connecter(noeudMilieu);
+	noeudConnexionBas->setType(Noeud::Type::Connexion);
+
+	m_noeuds.push_back(noeudMilieu);
+	m_noeuds.push_back(noeudMachine);
+	m_noeuds.push_back(noeudConnexionHaut);
+	m_noeuds.push_back(noeudConnexionBas);
+
+	// Connexions
+
+	Connexion cBas, cHaut;
+
+	cBas.setCoord((m_w - 76)/2, m_h - 16, 76, 16);
+	cBas.setDirection(Connexion::Direction::Bas);
+	cBas.setNoeud(noeudConnexionBas);
+	m_connexions.push_back(cBas);
+
+	cHaut.setCoord((m_w - 76)/2, 0, 76, 16);
+	cHaut.setDirection(Connexion::Direction::Haut);
+	cHaut.setNoeud(noeudConnexionHaut);
+	m_connexions.push_back(cHaut);
+
+	// Filtre
+
+	m_machines.push_back(new FiltreEau(loader));
+	m_machines[0]->setNoeudProche(noeudMachine);
+}
+
+
+void SalleTraitementEau::effectuerRotation(Loader& loader)
+{
+	if (m_positionRotation == Salle::Orientation::Verticale)
+	{
+		m_positionRotation = Salle::Orientation::Horizontale;
+
+		m_textureSalle = loader.obtenirTexture("images/salle de traitement des eaux usees/horizontale/salle.png");
+		m_textureConnexions = loader.obtenirTexture("images/salle de traitement des eaux usees/horizontale/connexions.png");
+
+		m_w = (m_textureSalle->getSize()).x;
+		m_h = (m_textureSalle->getSize()).y;
+
+		// Noeuds
+
+		m_noeuds[0]->setCoord(m_w/2, m_h/2);
+		m_noeuds[1]->setCoord(m_w/2, m_h/2);
+
+		m_noeuds[2]->setCoord(0, m_h/2);
+		m_noeuds[3]->setCoord(m_w, m_h/2);
+
+		// Connexions
+
+		Connexion cGauche, cDroite;
+
+		cGauche.setCoord(0, (m_h - 76)/2, 16, 76);
+		cGauche.setDirection(Connexion::Direction::Gauche);
+		cGauche.setNoeud(m_noeuds[2]);
+		m_connexions[0] = cGauche;
+
+		cDroite.setCoord(m_w - 16, (m_h - 76)/2, 16, 76);
+		cDroite.setDirection(Connexion::Direction::Droite);
+		cDroite.setNoeud(m_noeuds[3]);
+		m_connexions[1] = cDroite;
+	}
+	else
+	{
+		m_positionRotation = Salle::Orientation::Verticale;
+
+		m_textureSalle = loader.obtenirTexture("images/salle de traitement des eaux usees/verticale/salle.png");
+		m_textureConnexions = loader.obtenirTexture("images/salle de traitement des eaux usees/verticale/connexions.png");
 
 		m_w = (m_textureSalle->getSize()).x;
 		m_h = (m_textureSalle->getSize()).y;

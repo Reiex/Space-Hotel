@@ -5,7 +5,7 @@ Loader::Loader()
 {
 	// Chargement des images
 
-	int const nombreImages(89);
+	int const nombreImages(95);
 
 	std::string cheminsImages[nombreImages] = {
 		"images/fond/fond.png",
@@ -103,6 +103,13 @@ Loader::Loader()
 		"images/reserve eau/horizontale/salle.png",
 		"images/reserve eau/horizontale/connexions.png",
 		"images/reserve eau/horizontale/reservoirs.png",
+
+		"images/salle de traitement des eaux usees/verticale/salle.png",
+		"images/salle de traitement des eaux usees/verticale/connexions.png",
+		"images/salle de traitement des eaux usees/verticale/filtre.png",
+		"images/salle de traitement des eaux usees/horizontale/salle.png",
+		"images/salle de traitement des eaux usees/horizontale/connexions.png",
+		"images/salle de traitement des eaux usees/horizontale/filtre.png",
 
 		"images/salle de refroidissement/verticale/salle.png",
 		"images/salle de refroidissement/verticale/connexions.png",

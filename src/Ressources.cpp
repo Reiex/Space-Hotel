@@ -54,6 +54,12 @@ bool Conteneur::ressourceDisponnible(int i) const
 }
 
 
+bool Conteneur::ressourceEnTrop(int i) const
+{
+	return !m_emplacements[i].getEntree() && m_emplacements[i].getRessource() != 0;
+}
+
+
 int Conteneur::getTypeRessource(int i) const
 {
 	return m_emplacements[i].getRessource()->getType();
@@ -175,6 +181,12 @@ void EmplacementRessource::setEntree(bool entree)
 }
 
 
+bool EmplacementRessource::getEntree() const
+{
+	return m_entree;
+}
+
+
 void EmplacementRessource::setRessourceNecessaire(bool necessaire)
 {
 	m_ressourceNecessaire = necessaire;
@@ -221,6 +233,12 @@ Ressource::Ressource(int type)
 	m_etat = 100;
 	m_conteneur = 0;
 	m_noeudProche = 0;
+}
+
+
+void Ressource::setType(int type)
+{
+	m_type = type;
 }
 
 
@@ -348,190 +366,6 @@ Machine::~Machine()
 }
 
 
-// FONCTIONS MEMBRES DE LA CLASSE TERMINAL_RADIATEUR
-
-
-TerminalRadiateur::TerminalRadiateur(Loader& loader) : Machine(2, 0)
-{
-	m_emplacements[0].setRessourceNecessaire(true);
-	m_emplacements[1].setRessourceNecessaire(true);
-
-	for (int i(0); i < Ressource::nbTypes; i++)
-	{
-		if (i != Ressource::Eau)
-		{
-			m_emplacements[0].interdireRessource(i);
-			m_emplacements[1].interdireRessource(i);
-		}
-	}
-
-	m_x = 65;
-	m_y = 57;
-	m_w = 44;
-	m_h = 68;
-
-	m_texture = loader.obtenirTexture("images/salle de refroidissement/verticale/terminal radiateur.png");
-
-	m_energieConso = 2;
-	m_chaleurDissipee = 0;
-}
-
-
-void TerminalRadiateur::faireFonctionner(float dt, bool panneElectrique)
-{
-	m_chaleurDissipee = 0;
-
-	if (!panneElectrique)
-	{
-		m_chaleurDissipee = (ressourcePresente(0) + ressourcePresente(1)) * 20;
-	}
-}
-
-
-void TerminalRadiateur::effectuerRotation(Loader& loader)
-{
-	if (m_texture == loader.obtenirTexture("images/salle de refroidissement/verticale/terminal radiateur.png"))
-	{
-		m_x = 57;
-		m_y = 69;
-		m_w = 68;
-		m_h = 45;
-
-		m_texture = loader.obtenirTexture("images/salle de refroidissement/horizontale/terminal radiateur.png");
-	}
-	else
-	{
-		m_x = 65;
-		m_y = 57;
-		m_w = 44;
-		m_h = 68;
-
-		m_texture = loader.obtenirTexture("images/salle de refroidissement/verticale/terminal radiateur.png");
-	}
-}
-
-
-void TerminalRadiateur::afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const
-{
-	int x(SurfaceDessinDetails.getX()), y(SurfaceDessinDetails.getY()), w(SurfaceDessinDetails.getW()), h(SurfaceDessinDetails.getH());
-
-	sf::Texture* texture;
-	sf::Sprite sprite;
-	sf::Text texte;
-	texte.setFont(*(loader.getFont()));
-	texte.setFillColor(sf::Color(5, 15, 6));
-	texte.setCharacterSize(25);
-
-	/*
-		Consommation électrique: [] X
-
-		Alimentation du radiateur:
-
-			[] [] ===> [Thermometre] [Thermometre]
-
-		Chaleur dissipée: [] X
-
-	*/
-
-	// Consommation électrique
-
-	texte.setString(sf::String("Consommation électrique:"));
-	texte.setPosition(x, y + 5);
-	window.draw(texte);
-
-	int wTexte(texte.getGlobalBounds().width);
-	texture = loader.obtenirTexture("images/interface/logo electricite.png");
-	sprite.setTexture(*texture);
-	sprite.setPosition(x + wTexte + 10, y + 3);
-	sprite.setScale(0.3, 0.3);
-	window.draw(sprite);
-
-	texte.setString(sf::String(float_to_string(m_energieConso)));
-	texte.setPosition(x + wTexte + 50, y);
-	texte.setCharacterSize(30);
-	window.draw(texte);
-
-	texte.setCharacterSize(25);
-
-	// Alimentation du radiateur
-
-	texte.setString(sf::String("Alimentation du radiateur:"));
-	texte.setPosition(x, y + h / 2 - 50);
-	window.draw(texte);
-
-	int nbEau(m_emplacements[0].estOccupe() + m_emplacements[1].estOccupe());
-	if (nbEau >= 1)
-	{
-		texture = loader.obtenirTexture("images/interface/logo eau.png");
-	}
-	else
-	{
-		texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
-	}
-	sprite.setTexture(*texture);
-	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
-	sprite.setPosition(x + (w - 200) / 2, y + h / 2 + 20);
-	sprite.setScale(0.3, 0.3);
-	window.draw(sprite);
-
-	if (nbEau >= 2)
-	{
-		texture = loader.obtenirTexture("images/interface/logo eau.png");
-	}
-	else
-	{
-		texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
-	}
-	sprite.setTexture(*texture);
-	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
-	sprite.setPosition(x + (w - 200) / 2 + 40, y + h / 2 + 20);
-	sprite.setScale(0.3, 0.3);
-	window.draw(sprite);
-
-	texture = loader.obtenirTexture("images/interface/detail machine/progression.png");
-	sprite.setTexture(*texture);
-	sprite.setTextureRect(sf::IntRect(0, 0, 84, 30));
-	sprite.setPosition(x + (w - 200) / 2 + 78, y + h / 2 + 20);
-	sprite.setScale(1, 1);
-	window.draw(sprite);
-
-	sprite.setTextureRect(sf::IntRect(0, 30, 37.5 * nbEau, 22));
-	sprite.setPosition(x + (w - 200) / 2 + 81, y + h / 2 + 24);
-	window.draw(sprite);
-
-	texture = loader.obtenirTexture("images/interface/logo temperature.png");
-	sprite.setTexture(*texture);
-	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
-	sprite.setPosition(x + (w - 200) / 2 + 170, y + h / 2 + 20);
-	sprite.setScale(0.3, 0.3);
-	window.draw(sprite);
-
-	// Chaleur dissipée
-
-	texte.setString(sf::String("Chaleur dissipée:"));
-	texte.setPosition(x, y + h - 35);
-	window.draw(texte);
-
-	wTexte = texte.getGlobalBounds().width;
-	texture = loader.obtenirTexture("images/interface/logo temperature.png");
-	sprite.setTexture(*texture);
-	sprite.setPosition(x + wTexte + 10, y + h - 37);
-	window.draw(sprite);
-
-	if (panneElectrique)
-	{
-		texte.setString(sf::String(float_to_string(m_chaleurDissipee)) + "(" + std::to_string(nbEau * 20) + ")");
-	}
-	else
-	{
-		texte.setString(sf::String(float_to_string(m_chaleurDissipee)));
-	}
-	texte.setPosition(x + wTexte + 50, y + h - 40);
-	texte.setCharacterSize(30);
-	window.draw(texte);
-}
-
-
 // FONCTIONS MEMBRES DE LA CLASSE CONTENEUR_EAU
 
 
@@ -593,7 +427,7 @@ void ReservoirEau::effectuerRotation(Loader& loader)
 	if (m_texture == loader.obtenirTexture("images/reserve eau/verticale/reservoirs.png"))
 	{
 		m_x = 55;
-		m_y = 21;
+		m_y = 27;
 		m_w = 97;
 		m_h = 132;
 
@@ -811,4 +645,349 @@ void ReservoirEau::afficherDetails(sf::RenderWindow& window, Loader& loader, boo
 		sprite.setPosition(x + (w - 390)/2 + 40*i, y + 35 + 2*(h - 35 - 140)/3 + 70 + 40);
 		window.draw(sprite);
 	}
+}
+
+
+// FONCTIONS MEMBRES DE LA CLASSE FILTRE_EAU
+
+
+FiltreEau::FiltreEau(Loader& loader) : Machine(1, 1)
+{
+	m_emplacements[0].setRessourceNecessaire(true);
+	for (int i(0); i < Ressource::nbTypes; i++)
+	{
+		if (i != Ressource::EauSale)
+		{
+			m_emplacements[0].interdireRessource(i);
+		}
+		if (i != Ressource::Eau)
+		{
+			m_emplacements[1].interdireRessource(i);
+		}
+	}
+
+	m_x = 27;
+	m_y = 33;
+	m_w = 64;
+	m_h = 141;
+
+	m_texture = loader.obtenirTexture("images/salle de traitement des eaux usees/verticale/filtre.png");
+
+	m_energieConso = 5;
+
+	m_avancement = 0;
+}
+
+
+void FiltreEau::faireFonctionner(float dt, bool panneElectrique)
+{
+	if (panneElectrique || m_emplacements[0].getRessource() == 0 || m_emplacements[1].getRessource() != 0)
+	{
+		m_avancement = 0;
+	}
+	else
+	{
+		m_avancement += dt / 30;
+		if (m_avancement >= 1)
+		{
+			Ressource* ressource(m_emplacements[0].getRessource());
+			m_emplacements[0].setRessource(0);
+			ressource->setType(Ressource::Eau);
+			m_emplacements[1].setRessource(ressource);
+		}
+	}
+}
+
+
+void FiltreEau::effectuerRotation(Loader& loader)
+{
+	if (m_texture == loader.obtenirTexture("images/salle de traitement des eaux usees/verticale/filtre.png"))
+	{
+		m_x = 33;
+		m_y = 43;
+		m_w = 64;
+		m_h = 141;
+
+		m_texture = loader.obtenirTexture("images/salle de traitement des eaux usees/horizontale/filtre.png");
+	}
+	else
+	{
+		m_x = 27;
+		m_y = 33;
+		m_w = 64;
+		m_h = 141;
+
+		m_texture = loader.obtenirTexture("images/salle de traitement des eaux usees/verticale/filtre.png");
+	}
+}
+
+
+void FiltreEau::afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const
+{
+	int x(SurfaceDessinDetails.getX()), y(SurfaceDessinDetails.getY()), w(SurfaceDessinDetails.getW()), h(SurfaceDessinDetails.getH());
+
+	sf::Texture* texture;
+	sf::Sprite sprite;
+	sf::Text texte;
+	texte.setFont(*(loader.getFont()));
+	texte.setFillColor(sf::Color(5, 15, 6));
+	texte.setCharacterSize(25);
+
+	/*
+		Consommation électrique: [] X
+
+		Filtrage de l'eau:
+
+			[] ===> []
+
+	*/
+
+	// Consommation électrique
+
+	texte.setString(sf::String("Consommation électrique:"));
+	texte.setPosition(x, y + 5);
+	window.draw(texte);
+
+	int wTexte(texte.getGlobalBounds().width);
+	texture = loader.obtenirTexture("images/interface/logo electricite.png");
+	sprite.setTexture(*texture);
+	sprite.setPosition(x + wTexte + 10, y + 3);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	texte.setString(sf::String(float_to_string(m_energieConso)));
+	texte.setPosition(x + wTexte + 50, y);
+	texte.setCharacterSize(30);
+	window.draw(texte);
+
+	texte.setCharacterSize(25);
+
+	// Avancement du filtrage de l'eau
+
+	texte.setString(sf::String("Filtrage de l'eau:"));
+	texte.setPosition(x, y + 40 + (h - 80)/2);
+	window.draw(texte);
+
+	if (m_emplacements[0].estOccupe())
+	{
+		texture = loader.obtenirTexture("images/interface/logo eau sale.png");
+	}
+	else
+	{
+		texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
+	}
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setPosition(x + (w - 160)/2, y + 40 + (h - 80)/2 + 40);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	if (m_emplacements[1].getRessource() != 0)
+	{
+		texture = loader.obtenirTexture("images/interface/logo eau.png");
+	}
+	else
+	{
+		texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
+	}
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setPosition(x + (w - 160)/2 + 130, y + 40 + (h - 80)/2 + 40);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	texture = loader.obtenirTexture("images/interface/detail machine/progression.png");
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 84, 30));
+	sprite.setPosition(x + (w - 160)/2 + 48, y + 40 + (h - 80)/2 + 40);
+	sprite.setScale(1, 1);
+	window.draw(sprite);
+
+	sprite.setTextureRect(sf::IntRect(0, 30, 75*m_avancement, 22));
+	sprite.setPosition(x + (w - 160)/2 + 51, y + 40 + (h - 80)/2 + 44);
+	window.draw(sprite);
+}
+
+
+// FONCTIONS MEMBRES DE LA CLASSE TERMINAL_RADIATEUR
+
+
+TerminalRadiateur::TerminalRadiateur(Loader& loader) : Machine(2, 0)
+{
+	m_emplacements[0].setRessourceNecessaire(true);
+	m_emplacements[1].setRessourceNecessaire(true);
+
+	for (int i(0); i < Ressource::nbTypes; i++)
+	{
+		if (i != Ressource::Eau)
+		{
+			m_emplacements[0].interdireRessource(i);
+			m_emplacements[1].interdireRessource(i);
+		}
+	}
+
+	m_x = 65;
+	m_y = 57;
+	m_w = 44;
+	m_h = 68;
+
+	m_texture = loader.obtenirTexture("images/salle de refroidissement/verticale/terminal radiateur.png");
+
+	m_energieConso = 2;
+	m_chaleurDissipee = 0;
+}
+
+
+void TerminalRadiateur::faireFonctionner(float dt, bool panneElectrique)
+{
+	m_chaleurDissipee = 0;
+
+	if (!panneElectrique)
+	{
+		m_chaleurDissipee = (ressourcePresente(0) + ressourcePresente(1)) * 20;
+	}
+}
+
+
+void TerminalRadiateur::effectuerRotation(Loader& loader)
+{
+	if (m_texture == loader.obtenirTexture("images/salle de refroidissement/verticale/terminal radiateur.png"))
+	{
+		m_x = 57;
+		m_y = 69;
+		m_w = 68;
+		m_h = 45;
+
+		m_texture = loader.obtenirTexture("images/salle de refroidissement/horizontale/terminal radiateur.png");
+	}
+	else
+	{
+		m_x = 65;
+		m_y = 57;
+		m_w = 44;
+		m_h = 68;
+
+		m_texture = loader.obtenirTexture("images/salle de refroidissement/verticale/terminal radiateur.png");
+	}
+}
+
+
+void TerminalRadiateur::afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const
+{
+	int x(SurfaceDessinDetails.getX()), y(SurfaceDessinDetails.getY()), w(SurfaceDessinDetails.getW()), h(SurfaceDessinDetails.getH());
+
+	sf::Texture* texture;
+	sf::Sprite sprite;
+	sf::Text texte;
+	texte.setFont(*(loader.getFont()));
+	texte.setFillColor(sf::Color(5, 15, 6));
+	texte.setCharacterSize(25);
+
+	/*
+		Consommation électrique: [] X
+
+		Alimentation du radiateur:
+
+			[] [] ===> [Thermometre] [Thermometre]
+
+		Chaleur dissipée: [] X
+
+	*/
+
+	// Consommation électrique
+
+	texte.setString(sf::String("Consommation électrique:"));
+	texte.setPosition(x, y + 5);
+	window.draw(texte);
+
+	int wTexte(texte.getGlobalBounds().width);
+	texture = loader.obtenirTexture("images/interface/logo electricite.png");
+	sprite.setTexture(*texture);
+	sprite.setPosition(x + wTexte + 10, y + 3);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	texte.setString(sf::String(float_to_string(m_energieConso)));
+	texte.setPosition(x + wTexte + 50, y);
+	texte.setCharacterSize(30);
+	window.draw(texte);
+
+	texte.setCharacterSize(25);
+
+	// Alimentation du radiateur
+
+	texte.setString(sf::String("Alimentation du radiateur:"));
+	texte.setPosition(x, y + h / 2 - 50);
+	window.draw(texte);
+
+	int nbEau(m_emplacements[0].estOccupe() + m_emplacements[1].estOccupe());
+	if (nbEau >= 1)
+	{
+		texture = loader.obtenirTexture("images/interface/logo eau.png");
+	}
+	else
+	{
+		texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
+	}
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setPosition(x + (w - 200) / 2, y + h / 2 + 20);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	if (nbEau >= 2)
+	{
+		texture = loader.obtenirTexture("images/interface/logo eau.png");
+	}
+	else
+	{
+		texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
+	}
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setPosition(x + (w - 200) / 2 + 40, y + h / 2 + 20);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	texture = loader.obtenirTexture("images/interface/detail machine/progression.png");
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 84, 30));
+	sprite.setPosition(x + (w - 200) / 2 + 78, y + h / 2 + 20);
+	sprite.setScale(1, 1);
+	window.draw(sprite);
+
+	sprite.setTextureRect(sf::IntRect(0, 30, 37.5 * nbEau, 22));
+	sprite.setPosition(x + (w - 200) / 2 + 81, y + h / 2 + 24);
+	window.draw(sprite);
+
+	texture = loader.obtenirTexture("images/interface/logo temperature.png");
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setPosition(x + (w - 200) / 2 + 170, y + h / 2 + 20);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	// Chaleur dissipée
+
+	texte.setString(sf::String("Chaleur dissipée:"));
+	texte.setPosition(x, y + h - 35);
+	window.draw(texte);
+
+	wTexte = texte.getGlobalBounds().width;
+	texture = loader.obtenirTexture("images/interface/logo temperature.png");
+	sprite.setTexture(*texture);
+	sprite.setPosition(x + wTexte + 10, y + h - 37);
+	window.draw(sprite);
+
+	if (panneElectrique)
+	{
+		texte.setString(sf::String(float_to_string(m_chaleurDissipee)) + "(" + std::to_string(nbEau * 20) + ")");
+	}
+	else
+	{
+		texte.setString(sf::String(float_to_string(m_chaleurDissipee)));
+	}
+	texte.setPosition(x + wTexte + 50, y + h - 40);
+	texte.setCharacterSize(30);
+	window.draw(texte);
 }
