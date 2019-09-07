@@ -82,7 +82,45 @@ void Carte::afficher(sf::RenderWindow& window, std::vector<Salle*>& sallesPointe
 	// Afficher le fond
 
 	window.setView(sf::View(sf::FloatRect(0, 0, 1920, 1080)));
-	window.draw(sf::Sprite(*(m_loader.obtenirTexture("images/fond/fond.png"))));
+
+	sf::Texture* texture;
+	sf::Sprite sprite;
+
+	texture = m_loader.obtenirTexture("images/fond/fond.png");
+	sprite.setTexture(*texture);
+	sprite.setPosition(0, 0);
+
+	window.draw(sprite);
+
+	float x(m_viewJeu.getCenter().x), y(m_viewJeu.getCenter().y), w(m_viewJeu.getSize().x), h(m_viewJeu.getSize().y), wBis, hBis;
+
+	texture = m_loader.obtenirTexture("images/fond/parallax0.png");
+	sprite.setTexture(*texture);
+	wBis = 1920*((w/1920)*0.01 + 1);
+	hBis = 1080*((h/1080)*0.01 + 1);
+	sprite.setTextureRect(sf::IntRect(int(x / 100) % 3840 - wBis/2, int(y / 100) % 2160 - hBis/2, wBis, hBis));
+	sprite.setScale(1920.0 / wBis, 1080.0 / hBis);
+	sprite.setPosition(0, 0);
+	if (!texture->isRepeated() || !texture->isSmooth())
+	{
+		texture->setRepeated(true);
+		texture->setSmooth(true);
+	}
+	window.draw(sprite);
+
+	texture = m_loader.obtenirTexture("images/fond/parallax1.png");
+	sprite.setTexture(*texture);
+	wBis = 1920*((w/1920)*0.1 + 1);
+	hBis = 1080*((h/1080)*0.1 + 1);
+	sprite.setTextureRect(sf::IntRect(int(x / 10) % 3840 - wBis/2, int(y / 10) % 2160 - hBis/2, wBis, hBis));
+	sprite.setScale(1920.0 / wBis, 1080.0 / hBis);
+	sprite.setPosition(0, 0);
+	if (!texture->isRepeated() || !texture->isSmooth())
+	{
+		texture->setRepeated(true);
+		texture->setSmooth(true);
+	}
+	window.draw(sprite);
 
 	// Afficher les salles
 
