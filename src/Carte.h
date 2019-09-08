@@ -2,9 +2,7 @@
 #define CARTE_H_INCLUDED
 
 
-#include "Salle.h"
-#include <cstdlib>
-#include <ctime>
+#include "Asteroide.h"
 
 
 int emplacementSelection(std::vector<Salle*> const& sallesPointees, Salle* salle);
@@ -26,6 +24,7 @@ class Carte
 		void deplacerView(sf::RenderWindow const& window, float dt);
 		void resetView();
 		void gererZoom(float delta);
+		void decouvrirAsteroides();
 
 		void gererPersonnages(float dt);
 		void gererIAPersonnages();
@@ -51,6 +50,7 @@ class Carte
 		bool collisionSourisMachine(sf::RenderWindow const& window);
 
 		Salle* preparerCreationSalle(sf::RenderWindow& window, Salle* nouvelleSalle);
+		Asteroide* preparerCreationStation(sf::RenderWindow& window, Station* nouvelleStation);
 		void ajouterSalle(Salle* nouvelleSalle, Salle* salleConnectee);
 		bool enleverSalles(std::vector<Salle*>& sallesPointees);
 
@@ -79,6 +79,10 @@ class Carte
 		std::vector<Ressource*> m_ressources;
 
         std::vector<Salle*> m_salles;
+
+		std::vector<Asteroide*> m_asteroides;
+		std::vector<std::pair<int, int>> m_chunksDecouverts;
+
 		std::vector<Menu*> m_menus;
 		std::vector<FenetreInformation> m_fenetresInformation;
 		Loader m_loader;

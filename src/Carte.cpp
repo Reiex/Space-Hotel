@@ -1,4 +1,5 @@
 #include "Carte.h"
+#include <iostream>
 
 
 int emplacementSelection(std::vector<Salle*> const& sallesPointees, Salle* salle)
@@ -53,6 +54,10 @@ Carte::Carte(sf::VideoMode const& resolution)
 	m_viewJeu.setCenter(0, 0);
 
 	m_viewInterface.reset(sf::FloatRect(0, 0, resolution.width, resolution.height));
+
+	// Initialiser les chunks d'asteroides decouverts
+
+	m_chunksDecouverts.push_back(std::pair<int, int>(0, 0));
 
 	// Ajouter les menus
 
@@ -153,6 +158,18 @@ void Carte::afficher(sf::RenderWindow& window, std::vector<Salle*>& sallesPointe
 
 			m_salles[i]->afficher(m_loader, window, flags, m_temperature, machinePointee);
 			// m_salles[i]->afficherNoeuds(window);
+		}
+	}
+
+	// Afficher les asteroides
+
+	for (int i(0); i < m_asteroides.size(); i++)
+	{
+		std::vector<int> flags;
+		if (m_asteroides[i]->collision(fenetreCollision))
+		{
+			m_asteroides[i]->afficher(m_loader, window, flags, m_temperature, machinePointee);
+			// m_asteroides[i]->afficherNoeuds(window);
 		}
 	}
 
@@ -455,7 +472,8 @@ void Carte::deplacerView(sf::RenderWindow const& window, float dt)
 {
 	float deplacementX(0), deplacementY(0);
 	sf::Vector2i positionSouris(sf::Mouse::getPosition(window));
-	sf::Vector2f resolution(m_viewInterface.getSize());
+	sf::Vector2f resolution(m_viewInterface.getSize()), tailleJeu(m_viewJeu.getSize());
+	float facteur(tailleJeu.x / resolution.x);
 
 	if (positionSouris.x < 5)
 	{
@@ -475,7 +493,9 @@ void Carte::deplacerView(sf::RenderWindow const& window, float dt)
 		deplacementY = 5 - resolution.y + positionSouris.y;
 	}
 
-	m_viewJeu.move(300 * deplacementX*dt, 300 * deplacementY*dt);
+	m_viewJeu.move(300 * facteur * deplacementX*dt, 300 * facteur * deplacementY*dt);
+
+	decouvrirAsteroides();
 }
 
 
@@ -504,6 +524,75 @@ void Carte::gererZoom(float delta)
 	}
 
 	m_viewJeu.setSize(tailleEcran.x * nouveauFacteur, tailleEcran.y * nouveauFacteur);
+}
+
+
+void Carte::decouvrirAsteroides()
+{
+	sf::Vector2f centre(m_viewJeu.getCenter());
+	std::vector<std::pair<int, int>> chunksPotentiels;
+	std::pair<int, int> chunkCentre((centre.x - 2500) / 5000, (centre.y - 2500) / 5000);
+
+	chunksPotentiels.push_back(chunkCentre);
+	chunksPotentiels.push_back(std::pair<int, int>(chunkCentre.first+1, chunkCentre.second+1));
+	chunksPotentiels.push_back(std::pair<int, int>(chunkCentre.first+1, chunkCentre.second));
+	chunksPotentiels.push_back(std::pair<int, int>(chunkCentre.first+1, chunkCentre.second-1));
+	chunksPotentiels.push_back(std::pair<int, int>(chunkCentre.first, chunkCentre.second+1));
+	chunksPotentiels.push_back(std::pair<int, int>(chunkCentre.first, chunkCentre.second-1));
+	chunksPotentiels.push_back(std::pair<int, int>(chunkCentre.first-1, chunkCentre.second+1));
+	chunksPotentiels.push_back(std::pair<int, int>(chunkCentre.first-1, chunkCentre.second));
+	chunksPotentiels.push_back(std::pair<int, int>(chunkCentre.first-1, chunkCentre.second-1));
+
+	for (int i(0); i < chunksPotentiels.size(); i++)
+	{
+		bool chunkDecouvert(true);
+
+		for (int j(0); j < m_chunksDecouverts.size(); j++)
+		{
+			if (m_chunksDecouverts[j] == chunksPotentiels[i])
+			{
+				chunkDecouvert = false;
+				break;
+			}
+		}
+
+		if (chunkDecouvert)
+		{
+			m_chunksDecouverts.push_back(chunksPotentiels[i]);
+			Asteroide* asteroide;
+			bool pose(false);
+			while (!pose)
+			{
+				int x(chunksPotentiels[i].first*5000 + rand() % 5000);
+				int y(chunksPotentiels[i].second*5000 + rand() % 5000);
+
+				if (x * x + y * y < 2500*2500)
+				{
+					continue;
+				}
+
+				int r(rand() % 300 + 100);
+				asteroide = new Asteroide(r);
+				asteroide->setCoord(x, y, 2*r + 100, 2*r + 100);
+				for (int k(0); k < m_asteroides.size(); k++)
+				{
+					if (m_asteroides[k]->collisionAsteroide(asteroide))
+					{
+						delete asteroide;
+						asteroide = 0;
+						break;
+					}
+				}
+
+				if (asteroide != 0)
+				{
+					asteroide->generer();
+					m_asteroides.push_back(asteroide);
+					pose = true;
+				}
+			}
+		}
+	}
 }
 
 
@@ -1379,11 +1468,92 @@ Salle* Carte::preparerCreationSalle(sf::RenderWindow& window, Salle* nouvelleSal
 		}
 	}
 
+	// Déterminer si la nouvelle salle est en collision avec un asteroide et si c'est le cas, annuler la connectabilité
+
+	for (int i(0); i < m_asteroides.size(); i++)
+	{
+		if (nouvelleSalle->collision(*m_asteroides[i]))
+		{
+			salleConnectable = -1;
+		}
+	}
+
 	// Retourner la salle connectable
 
 	if (salleConnectable != -1)
 	{
 		return m_salles[salleConnectable];
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+
+Asteroide* Carte::preparerCreationStation(sf::RenderWindow& window, Station* nouvelleStation)
+{
+	if (nouvelleStation == 0)
+	{
+		return 0;
+	}
+
+	// Déterminer si un asteroide est proche et si oui, déplacer la nouvelle station
+
+	sf::Vector2i positionSouris(sf::Mouse::getPosition(window));
+	sf::Vector2f centreView(m_viewJeu.getCenter()), tailleView(m_viewJeu.getSize());
+	float facteur(m_viewJeu.getSize().x / m_viewInterface.getSize().x);
+
+	nouvelleStation->setCoord(positionSouris.x*facteur - nouvelleStation->getW()/2 + centreView.x - tailleView.x/2, positionSouris.y*facteur - nouvelleStation->getH()/2 + centreView.y - tailleView.y/2);
+
+	int asteroideConnectable(-1);
+	float angle(0);
+	for (int i(0); i < m_asteroides.size(); i++)
+	{
+		int rayon(m_asteroides[i]->getRayon() + 50);
+		float deltaX(nouvelleStation->getX() + nouvelleStation->getW()/2 - m_asteroides[i]->getX() - rayon);
+		float deltaY(m_asteroides[i]->getY() - nouvelleStation->getY() - nouvelleStation->getH()/2 + rayon);
+		float dist(sqrt(pow(deltaX, 2) + pow(deltaY, 2)));
+		if (dist > rayon - 99 && dist < rayon + 99)
+		{
+			angle = atan2(deltaY, deltaX) - 1.570796;
+			nouvelleStation->setCoord(m_asteroides[i]->getX() + rayon - rayon*sin(angle) - nouvelleStation->getW()/2, m_asteroides[i]->getY() + rayon - rayon*cos(angle) - nouvelleStation->getH()/2);
+			asteroideConnectable = i;
+			break;
+		}
+	}
+
+	// Afficher la nouvelle station
+
+	window.setView(m_viewJeu);
+
+	sf::Texture* texture(nouvelleStation->getTexture());
+	sf::Sprite sprite(*texture);
+	sprite.setColor(sf::Color(255, 255, 255, 127));
+	sprite.setOrigin(nouvelleStation->getW()/2, nouvelleStation->getH()/2);
+	sprite.setPosition(nouvelleStation->getX() + nouvelleStation->getW()/2, nouvelleStation->getY() + nouvelleStation->getH()/2);
+	sprite.setRotation(-angle*57.3);
+	window.draw(sprite);
+
+	window.setView(m_viewInterface);
+
+	// Déterminer si la nouvelle station est en collision avec d'autres stations et si c'est le cas, annuler la connectabilité
+
+	for (int i(0); i < m_asteroides.size(); i++)
+	{
+		std::vector<Machine*>* stations(m_asteroides[i]->getMachines());
+		for (int j(0); j < stations->size(); j++)
+		if ((*stations)[j]->collision(*nouvelleStation))
+		{
+			asteroideConnectable = -1;
+		}
+	}
+
+	// Retourner la salle connectable
+
+	if (asteroideConnectable != -1)
+	{
+		return m_asteroides[asteroideConnectable];
 	}
 	else
 	{

@@ -1,4 +1,6 @@
 #include "Carte.h"
+#include <cstdlib>
+#include <ctime>
 
 
 int main()
@@ -11,12 +13,15 @@ int main()
 
     // INITIALISATION DE VARIABLES
 
+	srand(time(nullptr));
     sf::Clock chrono;
     float dt(1/144);
 	Carte carte(resolution);
 	Salle *nouvelleSalle(0), *salleProcheConnexion(0);
 	std::vector<Salle*> sallesPointees;
 	Machine* machinePointee(0);
+	Station* nouvelleStation(0);
+	Asteroide* asteroideProche(0);
 
 	std::unordered_map<std::string, sf::Keyboard::Key> raccourcis;
 	raccourcis["menu options"] = sf::Keyboard::Escape;
@@ -74,6 +79,10 @@ int main()
 							(*(carte.getMenus()))[3]->setAfficher(false);
 						}
 					}
+					else if (event.key.code == sf::Keyboard::P)
+					{
+						nouvelleStation = new Foreuse(*carte.getLoader());
+					}
 					break;
 
 				case sf::Event::MouseWheelScrolled:
@@ -93,7 +102,14 @@ int main()
 							salleProcheConnexion = 0;
 						}
 
-						else if (nouvelleSalle == 0)
+						// Création d'une nouvelle station
+
+						else if (nouvelleStation != 0 && asteroideProche != 0)
+						{
+							// TODO: Here
+						}
+
+						else if (nouvelleSalle == 0 && nouvelleStation == 0)
 						{
 							bool menuClique(carte.collisionSourisMenu(window));
 							bool machineClique(carte.collisionSourisMachine(window));
@@ -124,9 +140,15 @@ int main()
 						if (nouvelleSalle != 0)
 						{
 							delete nouvelleSalle;
+							nouvelleSalle = 0;
 						}
-						nouvelleSalle = 0;
+						if (nouvelleStation != 0)
+						{
+							delete nouvelleStation;
+							nouvelleStation = 0;
+						}
 						salleProcheConnexion = 0;
+						asteroideProche = 0;
 						sallesPointees.clear();
 						machinePointee = 0;
 					}
@@ -151,6 +173,7 @@ int main()
 
 		carte.afficher(window, sallesPointees, machinePointee);
 		salleProcheConnexion = carte.preparerCreationSalle(window, nouvelleSalle);
+		asteroideProche = carte.preparerCreationStation(window, nouvelleStation);
 
 		afficherFps(window, carte.getLoader(), dt);
     }

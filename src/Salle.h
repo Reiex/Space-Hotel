@@ -41,7 +41,7 @@ class Salle: public Entite
 		virtual void effectuerRotation(Loader& loader);
 
 		void updateTexture(Machine* machinePointee);
-		void afficher(Loader& loader, sf::RenderWindow& window, std::vector<int>& flags, float temperature, Machine* machinePointee);
+		virtual void afficher(Loader& loader, sf::RenderWindow& window, std::vector<int>& flags, float temperature, Machine* machinePointee);
 		void afficherNoeuds(sf::RenderWindow& window) const;
 
 		std::vector<Connexion>* getConnexions();
