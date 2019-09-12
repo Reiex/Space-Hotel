@@ -10,6 +10,12 @@ Noeud::Noeud()
 }
 
 
+int Noeud::getDegre() const
+{
+	return m_voisins.size();
+}
+
+
 void Noeud::connecter(Noeud* noeud)
 {
 	bool presentThis(false), presentNoeud(false);
@@ -140,6 +146,12 @@ int Noeud::getType() const
 void Noeud::setType(int type)
 {
 	m_type = type;
+}
+
+
+std::vector<Noeud*>* Noeud::getVoisins()
+{
+	return &m_voisins;
 }
 
 

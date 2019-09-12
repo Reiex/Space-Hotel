@@ -1,5 +1,4 @@
 #include "Carte.h"
-#include <iostream>
 
 
 int emplacementSelection(std::vector<Salle*> const& sallesPointees, Salle* salle)
@@ -67,6 +66,7 @@ Carte::Carte(sf::VideoMode const& resolution)
 	m_menus.push_back(new MenuDetailSalle(m_loader, resolution));
 	m_menus.push_back(new MenuFusionSalles(m_loader, resolution));
 	m_menus.push_back(new MenuDetailMachine(m_loader, resolution));
+	m_menus.push_back(new MenuCreationStation(m_loader, resolution));
 }
 
 
@@ -166,10 +166,9 @@ void Carte::afficher(sf::RenderWindow& window, std::vector<Salle*>& sallesPointe
 	for (int i(0); i < m_asteroides.size(); i++)
 	{
 		std::vector<int> flags;
-		if (m_asteroides[i]->collision(fenetreCollision))
+		if (m_asteroides[i]->collision(fenetreCollision) && !m_asteroides[i]->estConnecteSalles())
 		{
 			m_asteroides[i]->afficher(m_loader, window, flags, m_temperature, machinePointee);
-			// m_asteroides[i]->afficherNoeuds(window);
 		}
 	}
 
@@ -566,7 +565,7 @@ void Carte::decouvrirAsteroides()
 				int x(chunksPotentiels[i].first*5000 + rand() % 5000);
 				int y(chunksPotentiels[i].second*5000 + rand() % 5000);
 
-				if (x * x + y * y < 2500*2500)
+				if (x*x + y*y < 2500*2500)
 				{
 					continue;
 				}
@@ -605,7 +604,6 @@ void Carte::gererPersonnages(float dt)
 
 void Carte::gererIAPersonnages()
 {
-
 	// Regarder s'il faut activer l'IA
 
 	bool activer(false);
@@ -631,15 +629,21 @@ void Carte::gererIAPersonnages()
 
 			if (m_personnages[i]->getAction() == Personnage::Action::DeposerRessource)
 			{
-				machineCible->deposerRessource(ressourcePersonnage, emplacement);
-				m_personnages[i]->retirerRessource(ressourcePersonnage);
+				if (m_personnages[i]->getArrivee() == machineCible->getNoeudProche())
+				{
+					machineCible->deposerRessource(ressourcePersonnage, emplacement);
+					m_personnages[i]->retirerRessource(ressourcePersonnage);
+				}
 				machineCible->libererEmplacement(emplacement);
 			}
 			else if (m_personnages[i]->getAction() == Personnage::Action::PrendreRessource)
 			{
-				Ressource* ressourcePrise(machineCible->getRessource(emplacement));
-				m_personnages[i]->deposerRessource(ressourcePrise, 0);
-				machineCible->retirerRessource(ressourcePrise);
+				if (m_personnages[i]->getArrivee() == machineCible->getNoeudProche())
+				{
+					Ressource* ressourcePrise(machineCible->getRessource(emplacement));
+					m_personnages[i]->deposerRessource(ressourcePrise, 0);
+					machineCible->retirerRessource(ressourcePrise);
+				}
 				machineCible->libererEmplacement(emplacement);
 			}
 		}
@@ -918,6 +922,8 @@ void Carte::deplacerPersonnages(float dt)
 				m_salles[j]->deplacerPersonnage(m_personnages[i], dt);
 				break;
 			}
+
+			// TODO: Gérer ici le cas getDepart == 0 créé par la destruction de la salle de départ
 		}
 	}
 }
@@ -1193,7 +1199,7 @@ void Carte::gererMachinesRessources(float dt)
 }
 
 
-void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& sallesPointees, Machine* machinePointee, Salle*& nouvelleSalle)
+void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& sallesPointees, Machine* machinePointee, Salle*& nouvelleSalle, Station*& nouvelleStation)
 {
 	// Replier des menus avant ce clic
 
@@ -1222,6 +1228,11 @@ void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& s
 		m_menus[2]->setAfficher(false);
 	}
 
+	if (!(indiceMenu == 0 && indiceBouton == 2))
+	{
+		m_menus[6]->setAfficher(false);
+	}
+
 	// Gérer le clic
 
 	if (indiceMenu == 0)  // HUD gauche
@@ -1234,6 +1245,10 @@ void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& s
 		{
 			m_menus[2]->setAfficher(!m_menus[2]->estAffiche());
 		}
+		else if (indiceBouton == 2)
+		{
+			m_menus[6]->setAfficher(!m_menus[6]->estAffiche());
+		}
 	}
 
 	else if (indiceMenu == 1)  // HUD droit
@@ -1243,11 +1258,6 @@ void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& s
 
 	else if (indiceMenu == 2)  // Creation de salle
 	{
-		if (nouvelleSalle != 0)
-		{
-			delete nouvelleSalle;
-		}
-
 		switch (indiceBouton)
 		{
 			case 0:
@@ -1286,6 +1296,9 @@ void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& s
 			case 11:
 				nouvelleSalle = new PanneauRadiateur(m_loader);
 				break;
+			case 12:
+				nouvelleSalle = new SAS(m_loader);
+				break;
 			default:
 				break;
 		}
@@ -1310,6 +1323,23 @@ void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& s
 		if (!sallesPointees[0]->raccorderSalle(*(sallesPointees[1])))
 		{
 			ajouterInformation("Ces salles ne peuvent pas être raccordées.");
+		}
+	}
+
+	else if (indiceMenu == 5) // Détails machine
+	{
+
+	}
+
+	else if (indiceMenu == 6)  // Creation station
+	{
+		switch (indiceBouton)
+		{
+			case 0:
+				nouvelleStation = new Foreuse(m_loader);
+				break;
+			default:
+				break;
 		}
 	}
 }
@@ -1507,7 +1537,7 @@ Asteroide* Carte::preparerCreationStation(sf::RenderWindow& window, Station* nou
 	nouvelleStation->setCoord(positionSouris.x*facteur - nouvelleStation->getW()/2 + centreView.x - tailleView.x/2, positionSouris.y*facteur - nouvelleStation->getH()/2 + centreView.y - tailleView.y/2);
 
 	int asteroideConnectable(-1);
-	float angle(0);
+	float angle(0), diametre(0);
 	for (int i(0); i < m_asteroides.size(); i++)
 	{
 		int rayon(m_asteroides[i]->getRayon() + 50);
@@ -1517,9 +1547,30 @@ Asteroide* Carte::preparerCreationStation(sf::RenderWindow& window, Station* nou
 		if (dist > rayon - 99 && dist < rayon + 99)
 		{
 			angle = atan2(deltaY, deltaX) - 1.570796;
+			diametre = 2 * atan(float(nouvelleStation->getW())/(2*rayon));
+			nouvelleStation->setAngle(angle);
+			nouvelleStation->setDiametreAngulaire(diametre);
 			nouvelleStation->setCoord(m_asteroides[i]->getX() + rayon - rayon*sin(angle) - nouvelleStation->getW()/2, m_asteroides[i]->getY() + rayon - rayon*cos(angle) - nouvelleStation->getH()/2);
 			asteroideConnectable = i;
 			break;
+		}
+	}
+
+	// Annuler la connectabilité si la station est en collision avec d'autres stations
+
+	int collision(0);
+	if (asteroideConnectable != -1)
+	{
+		collision = -1;
+		std::vector<Machine*>* machines(m_asteroides[asteroideConnectable]->getMachines());
+		for (int i(0); i < machines->size(); i++)
+		{
+			if (nouvelleStation->collisionAngulaire((Station*) (*machines)[i]))
+			{
+				collision = 1;
+				asteroideConnectable = -1;
+				break;
+			}
 		}
 	}
 
@@ -1529,25 +1580,24 @@ Asteroide* Carte::preparerCreationStation(sf::RenderWindow& window, Station* nou
 
 	sf::Texture* texture(nouvelleStation->getTexture());
 	sf::Sprite sprite(*texture);
-	sprite.setColor(sf::Color(255, 255, 255, 127));
-	sprite.setOrigin(nouvelleStation->getW()/2, nouvelleStation->getH()/2);
-	sprite.setPosition(nouvelleStation->getX() + nouvelleStation->getW()/2, nouvelleStation->getY() + nouvelleStation->getH()/2);
-	sprite.setRotation(-angle*57.3);
+	if (collision == 0)
+	{
+		sprite.setColor(sf::Color(255, 255, 255, 127));
+	}
+	else if (collision == 1)
+	{
+		sprite.setColor(sf::Color(255, 127, 127, 127));
+	}
+	else
+	{
+		sprite.setColor(sf::Color(127, 255, 127, 127));
+	}
+	sprite.setOrigin(nouvelleStation->getW() / 2, nouvelleStation->getH() / 2);
+	sprite.setPosition(nouvelleStation->getX() + nouvelleStation->getW() / 2, nouvelleStation->getY() + nouvelleStation->getH() / 2);
+	sprite.setRotation(-angle * 57.3);
 	window.draw(sprite);
 
 	window.setView(m_viewInterface);
-
-	// Déterminer si la nouvelle station est en collision avec d'autres stations et si c'est le cas, annuler la connectabilité
-
-	for (int i(0); i < m_asteroides.size(); i++)
-	{
-		std::vector<Machine*>* stations(m_asteroides[i]->getMachines());
-		for (int j(0); j < stations->size(); j++)
-		if ((*stations)[j]->collision(*nouvelleStation))
-		{
-			asteroideConnectable = -1;
-		}
-	}
 
 	// Retourner la salle connectable
 
@@ -1573,6 +1623,23 @@ void Carte::ajouterSalle(Salle* nouvelleSalle, Salle* salleConnectee)
 	m_capaciteAccu += nouvelleSalle->getCapaciteAccu();
 	m_energieAccu += nouvelleSalle->getEnergieAccu();
 	m_chaleurDissipee += nouvelleSalle->getChaleurDissipee();
+}
+
+
+void Carte::ajouterStation(Station* nouvelleStation, Asteroide* asteroideProche)
+{
+	nouvelleStation->setCoord(nouvelleStation->getX() - asteroideProche->getX(), nouvelleStation->getY() - asteroideProche->getY());
+	asteroideProche->connecterStation(nouvelleStation);
+
+	for (int i(0); i < m_salles.size(); i++)
+	{
+		if (m_salles[i] == asteroideProche)
+		{
+			return;
+		}
+	}
+
+	m_salles.push_back(asteroideProche);
 }
 
 
@@ -1663,6 +1730,18 @@ bool Carte::enleverSalles(std::vector<Salle*>& sallesPointees)
 	}
 
 	return true;
+}
+
+
+void Carte::assurerConnectionSAS()
+{
+	for (int i(0); i < m_asteroides.size(); i++)
+	{
+		if (m_asteroides[i]->estConnecteSalles())
+		{
+			m_asteroides[i]->assurerConnectionSAS();
+		}
+	}
 }
 
 

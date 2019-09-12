@@ -2,7 +2,6 @@
 #define RESSOURCES_H_INCLUDED
 
 #include "Entite.h"
-#include "Loader.h"
 #include "fonctions.h"
 #include <vector>
 

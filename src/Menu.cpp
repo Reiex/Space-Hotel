@@ -225,17 +225,19 @@ HudGauche::HudGauche(Loader& loader, sf::VideoMode const& resolution)
 	m_spriteFond = sf::Sprite(*loader.obtenirTexture("images/interface/HUD gauche/fond.png"), sf::IntRect(0, 0, 125, 1080));
 	m_spriteFond.setPosition(0, 0);
 
-	sf::IntRect coordBoutons[2] = {
+	sf::IntRect coordBoutons[3] = {
 		sf::IntRect(10, 10, 100, 100),  // Menu options
-		sf::IntRect(10, 120, 100, 100)  // Creation de salle
+		sf::IntRect(10, 120, 100, 100),  // Creation de salle
+		sf::IntRect(10, 230, 100, 100)  // Creation station
 	};
 
-	std::string chainesDescriptions[2] = {
+	std::string chainesDescriptions[3] = {
 		"Menu principal",
-		"Créer une nouvelle salle"
+		"Créer une nouvelle salle",
+		"Créer une nouvelle station"
 	};
 
-	for (int i(0); i < 2; i++)
+	for (int i(0); i < 3; i++)
 	{
 		sf::Sprite sprite(*loader.obtenirTexture("images/interface/HUD gauche/boutons.png"), coordBoutons[i]);
 		sf::Sprite spriteHover(*loader.obtenirTexture("images/interface/HUD gauche/boutons hover.png"), coordBoutons[i]);
@@ -315,11 +317,11 @@ MenuCreationSalle::MenuCreationSalle(Loader& loader, sf::VideoMode const& resolu
 
 	float scaleX(resolution.width / 1920), scaleY(resolution.height / 1080);
 
-	setCoord(130 * scaleX, 104 * scaleY, 460 * scaleX, 460 * scaleY);
-	m_spriteFond = sf::Sprite(*loader.obtenirTexture("images/interface/creation salle/fond.png"), sf::IntRect(130, 104, 460, 460));
+	setCoord(130 * scaleX, 104 * scaleY, 460 * scaleX, 570 * scaleY);
+	m_spriteFond = sf::Sprite(*loader.obtenirTexture("images/interface/creation salle/fond.png"), sf::IntRect(130, 104, 460, 570));
 	m_spriteFond.setPosition(130 * scaleX, 104 * scaleY);
 
-	sf::IntRect coordBoutons[12] = {
+	sf::IntRect coordBoutons[13] = {
 
 		sf::IntRect(145, 119, 100, 100),  // Couloir I
 		sf::IntRect(255, 119, 100, 100),  // Couloir T
@@ -335,10 +337,12 @@ MenuCreationSalle::MenuCreationSalle(Loader& loader, sf::VideoMode const& resolu
 		sf::IntRect(255, 339, 100, 100),  // Salle de traitement des eaux usées
 
 		sf::IntRect(145, 449, 100, 100),  // Salle de refroidissement
-		sf::IntRect(255, 449, 100, 100)  // Panneau radiateur
+		sf::IntRect(255, 449, 100, 100),  // Panneau radiateur
+
+		sf::IntRect(145, 559, 100, 100)  // SAS
 	};
 
-	std::string chainesDescriptions[12] = {
+	std::string chainesDescriptions[13] = {
 		"Couloir I\nSalle vide.",
 
 		"Couloir T\nSalle vide.",
@@ -378,10 +382,13 @@ MenuCreationSalle::MenuCreationSalle(Loader& loader, sf::VideoMode const& resolu
 
 		"Panneau radiateur\n"
 		"Peut être attaché à une salle de refroidissement pour augmenter son efficacité.\n"
-		"Cette salle est une impasse, elle ne peut être connectée qu'à une seule autre salle."
+		"Cette salle est une impasse, elle ne peut être connectée qu'à une seule autre salle.",
+
+		"SAS\n"
+		"Permet aux habitants de sortir dans le vide spatiale."
 	};
 
-	for (int i(0); i < 12; i++)
+	for (int i(0); i < 13; i++)
 	{
 		sf::Sprite sprite(*loader.obtenirTexture("images/interface/creation salle/boutons.png"), coordBoutons[i]);
 		sf::Sprite spriteHover(*loader.obtenirTexture("images/interface/creation salle/boutons hover.png"), coordBoutons[i]);
@@ -537,4 +544,52 @@ MenuDetailMachine::MenuDetailMachine(Loader& loader, sf::VideoMode const& resolu
 	setCoord(0, 0, 504 * scaleX, 260 * scaleY);
 	m_spriteFond = sf::Sprite(*loader.obtenirTexture("images/interface/detail machine/fond.png"), sf::IntRect(0, 0, 504, 1080));
 	m_spriteFond.setPosition(0, 0);
+}
+
+
+// FONCTIONS MEMBRES DE LA CLASSE MENU_CREATION_STATION
+
+
+MenuCreationStation::MenuCreationStation(Loader& loader, sf::VideoMode const& resolution)
+{
+	m_afficher = false;
+
+	float scaleX(resolution.width / 1920), scaleY(resolution.height / 1080);
+
+	setCoord(130 * scaleX, 215 * scaleY, 130 * scaleX, 130 * scaleY);
+	m_spriteFond = sf::Sprite(*loader.obtenirTexture("images/interface/creation station/fond.png"), sf::IntRect(130, 215, 130, 130));
+	m_spriteFond.setPosition(130 * scaleX, 215 * scaleY);
+
+	sf::IntRect coordBoutons[1] = {
+
+		sf::IntRect(145, 230, 100, 100)  // Foreuse
+	};
+
+	std::string chainesDescriptions[1] = {
+		"Foreuse."
+	};
+
+	for (int i(0); i < 1; i++)
+	{
+		sf::Sprite sprite(*loader.obtenirTexture("images/interface/creation station/boutons.png"), coordBoutons[i]);
+		sf::Sprite spriteHover(*loader.obtenirTexture("images/interface/creation station/boutons hover.png"), coordBoutons[i]);
+		sf::Sprite spriteOnclick(*loader.obtenirTexture("images/interface/creation station/boutons onclick.png"), coordBoutons[i]);
+
+		sprite.setPosition(coordBoutons[i].left, coordBoutons[i].top);
+		spriteHover.setPosition(coordBoutons[i].left, coordBoutons[i].top);
+		spriteOnclick.setPosition(coordBoutons[i].left, coordBoutons[i].top);
+
+		Bouton bouton;
+		bouton.setCoord(coordBoutons[i].left * scaleX, coordBoutons[i].top * scaleY, coordBoutons[i].width * scaleX, coordBoutons[i].height * scaleY);
+		bouton.setSprite(sprite, spriteHover, spriteOnclick);
+
+		FenetreDescription* description(new FenetreDescription(loader, resolution, chainesDescriptions[i]));
+		description->setPosition(coordBoutons[i].left + coordBoutons[i].width + 5, coordBoutons[i].top + 20);
+		Entite* declencheur(new Entite(coordBoutons[i].left * scaleX, coordBoutons[i].top * scaleY, coordBoutons[i].width * scaleX, coordBoutons[i].height * scaleY));
+		description->setDeclencheur(declencheur);
+
+		bouton.setDescription(description);
+
+		m_boutons.push_back(bouton);
+	}
 }

@@ -9,10 +9,11 @@ class Noeud : public Entite
 {
 	public:
 
-		enum Type {Normal, Connexion, Machine};
+		enum Type {Normal, Connexion, Machine, SAS};
 
 		Noeud();
 
+		int getDegre() const;
 		void connecter(Noeud* noeud);
 		void trouverTrajectoire(Noeud* noeud, std::queue<Noeud*>& trajectoire);
 
@@ -21,6 +22,8 @@ class Noeud : public Entite
 
 		int getType() const;
 		void setType(int type);
+
+		std::vector<Noeud*>* getVoisins();
 
 		~Noeud();
 

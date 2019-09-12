@@ -13,7 +13,7 @@ int main()
 
     // INITIALISATION DE VARIABLES
 
-	srand(time(nullptr));
+	srand(0);  // time(nullptr)
     sf::Clock chrono;
     float dt(1/144);
 	Carte carte(resolution);
@@ -79,10 +79,6 @@ int main()
 							(*(carte.getMenus()))[3]->setAfficher(false);
 						}
 					}
-					else if (event.key.code == sf::Keyboard::P)
-					{
-						nouvelleStation = new Foreuse(*carte.getLoader());
-					}
 					break;
 
 				case sf::Event::MouseWheelScrolled:
@@ -106,7 +102,9 @@ int main()
 
 						else if (nouvelleStation != 0 && asteroideProche != 0)
 						{
-							// TODO: Here
+							carte.ajouterStation(nouvelleStation, asteroideProche);
+							nouvelleStation = 0;
+							asteroideProche = 0;
 						}
 
 						else if (nouvelleSalle == 0 && nouvelleStation == 0)
@@ -130,7 +128,7 @@ int main()
 								carte.selectionSalle(window, sallesPointees);
 							}
 
-							carte.gererClicMenu(window, sallesPointees, machinePointee, nouvelleSalle);
+							carte.gererClicMenu(window, sallesPointees, machinePointee, nouvelleSalle, nouvelleStation);
 						}
 					}
 					else if (event.mouseButton.button == sf::Mouse::Right)
@@ -157,6 +155,8 @@ int main()
                 default:
                     break;
             }
+
+			carte.assurerConnectionSAS();
         }
 
 		// GESTION DU JEU

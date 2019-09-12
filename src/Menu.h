@@ -149,4 +149,12 @@ class MenuDetailMachine : public Menu
 };
 
 
+class MenuCreationStation : public Menu
+{
+	public:
+
+		MenuCreationStation(Loader& loader, sf::VideoMode const& resolution);
+};
+
+
 #endif // INTERFACE_H_INCLUDED

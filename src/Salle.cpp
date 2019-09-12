@@ -474,9 +474,33 @@ void Salle::afficherNoeuds(sf::RenderWindow& window) const
 {
 	for (int i(0); i < m_noeuds.size(); i++)
 	{
+		sf::VertexArray arrete(sf::LineStrip, 2);
+		arrete[0].color = sf::Color(28, 175, 39);
+		arrete[1].color = sf::Color(28, 175, 39);
+		arrete[0].position = sf::Vector2f(m_x + m_noeuds[i]->getX(), m_y + m_noeuds[i]->getY());
+		std::vector<Noeud*>* voisins(m_noeuds[i]->getVoisins());
+		for (int j(0); j < voisins->size(); j++)
+		{
+			for (int k(0); k < m_voisines.size(); k++)
+			{
+				if (m_voisines[k]->appartenanceNoeud((*voisins)[j]))
+				{
+					arrete[1].position = sf::Vector2f(m_voisines[k]->m_x + (*voisins)[j]->getX(), m_voisines[k]->m_y + (*voisins)[j]->getY());
+					window.draw(arrete);
+					break;
+				}
+			}
+
+			if (appartenanceNoeud((*voisins)[j]))
+			{
+				arrete[1].position = sf::Vector2f(m_x + (*voisins)[j]->getX(), m_y + (*voisins)[j]->getY());
+				window.draw(arrete);
+			}
+		}
+
 		sf::CircleShape cercle(5);
 		cercle.setFillColor(sf::Color(28, 175, 39));
-		cercle.setPosition(m_x + m_noeuds[i]->getX(), m_y + m_noeuds[i]->getY());
+		cercle.setPosition(m_x + m_noeuds[i]->getX() - 5, m_y + m_noeuds[i]->getY() - 5);
 		window.draw(cercle);
 	}
 }
@@ -608,6 +632,15 @@ Salle::~Salle()
 	for (int i(0); i < m_noeuds.size(); i++)
 	{
 		delete m_noeuds[i];
+	}
+
+	for (int i(0); i < SAS::ListeSAS.size(); i++)
+	{
+		if (SAS::ListeSAS[i] == this)
+		{
+			SAS::ListeSAS.erase(SAS::ListeSAS.begin() + i);
+			i--;
+		}
 	}
 }
 
@@ -1047,7 +1080,6 @@ CouloirL::CouloirL(Loader& loader)
 
 void CouloirL::effectuerRotation(Loader& loader)
 {
-
 	if (m_positionRotation == Salle::Orientation::Haut)
 	{
 		m_positionRotation = Salle::Orientation::Droite;
@@ -2229,4 +2261,174 @@ void PanneauRadiateur::effectuerRotation(Loader& loader)
 		cHaut.setType(Connexion::Type::PanneauRadiateur);
 		m_connexions[1] = cHaut;
 	}
+}
+
+
+// FONCTIONS MEMBRES DE LA CLASSE SAS
+
+
+std::vector<SAS*> SAS::ListeSAS;
+
+
+SAS::SAS(Loader& loader)
+{
+	ListeSAS.push_back(this);
+
+	m_energieConso = 2;
+
+	m_positionRotation = Salle::Orientation::Bas;
+
+	m_textureSalle = loader.obtenirTexture("images/sas/bas/salle.png");
+	m_textureConnexions = loader.obtenirTexture("images/sas/bas/connexions.png");
+
+	m_w = (m_textureSalle->getSize()).x;
+	m_h = (m_textureSalle->getSize()).y;
+	m_x = -m_w / 2;
+	m_y = -m_h / 2;
+
+	// Noeuds
+
+	Noeud *noeudMilieuSAS(new Noeud), *noeudConnexionHaut(new Noeud), *noeudConnexionBas(new Noeud);
+
+	noeudMilieuSAS->setCoord(m_w / 2, m_h / 2);
+	noeudMilieuSAS->setType(Noeud::Type::SAS);
+
+	noeudConnexionHaut->setCoord(m_w / 2, 0);
+	noeudConnexionHaut->connecter(noeudMilieuSAS);
+	noeudConnexionHaut->setType(Noeud::Type::Connexion);
+
+	noeudConnexionBas->setCoord(m_w / 2, m_h);
+	noeudConnexionBas->connecter(noeudMilieuSAS);
+	noeudConnexionBas->setType(Noeud::Type::Connexion);
+
+	m_noeuds.push_back(noeudMilieuSAS);
+	m_noeuds.push_back(noeudConnexionHaut);
+	m_noeuds.push_back(noeudConnexionBas);
+
+	// Connexions
+
+	Connexion cHaut;
+
+	cHaut.setCoord((m_w - 76) / 2, 0, 76, 16);
+	cHaut.setDirection(Connexion::Direction::Haut);
+	cHaut.setType(Connexion::Type::Standard);
+	cHaut.setNoeud(m_noeuds[1]);
+	m_connexions.push_back(cHaut);
+}
+
+
+void SAS::effectuerRotation(Loader& loader)
+{
+	if (m_positionRotation == Salle::Orientation::Haut)
+	{
+		m_positionRotation = Salle::Orientation::Droite;
+
+		m_textureSalle = loader.obtenirTexture("images/sas/droit/salle.png");
+		m_textureConnexions = loader.obtenirTexture("images/sas/droit/connexions.png");
+
+		m_w = (m_textureSalle->getSize()).x;
+		m_h = (m_textureSalle->getSize()).y;
+
+		// Noeuds
+
+		m_noeuds[0]->setCoord(m_w / 2, m_h / 2);
+		m_noeuds[1]->setCoord(0, m_h / 2);
+		m_noeuds[2]->setCoord(m_w, m_h / 2);
+
+		// Connexions
+
+		Connexion cGauche;
+
+		cGauche.setCoord(0, (m_h - 76) / 2, 16, 76);
+		cGauche.setDirection(Connexion::Direction::Gauche);
+		cGauche.setNoeud(m_noeuds[1]);
+		m_connexions[0] = cGauche;
+	}
+	else if (m_positionRotation == Salle::Orientation::Droite)
+	{
+		m_positionRotation = Salle::Orientation::Bas;
+
+		m_textureSalle = loader.obtenirTexture("images/sas/bas/salle.png");
+		m_textureConnexions = loader.obtenirTexture("images/sas/bas/connexions.png");
+
+		m_w = (m_textureSalle->getSize()).x;
+		m_h = (m_textureSalle->getSize()).y;
+
+		// Noeuds
+
+		m_noeuds[0]->setCoord(m_w / 2, m_h / 2);
+		m_noeuds[1]->setCoord(m_w / 2, 0);
+		m_noeuds[2]->setCoord(m_w / 2, m_h);
+
+		// Connexions
+
+		Connexion cHaut;
+
+		cHaut.setCoord((m_w - 76) / 2, 0, 76, 16);
+		cHaut.setDirection(Connexion::Direction::Haut);
+		cHaut.setNoeud(m_noeuds[1]);
+		m_connexions[0] = cHaut;
+	}
+	else if (m_positionRotation == Salle::Orientation::Bas)
+	{
+		m_positionRotation = Salle::Orientation::Gauche;
+
+		m_textureSalle = loader.obtenirTexture("images/sas/gauche/salle.png");
+		m_textureConnexions = loader.obtenirTexture("images/sas/gauche/connexions.png");
+
+		m_w = (m_textureSalle->getSize()).x;
+		m_h = (m_textureSalle->getSize()).y;
+
+		// Noeuds
+
+		m_noeuds[0]->setCoord(m_w / 2, m_h / 2);
+		m_noeuds[1]->setCoord(m_w, m_h / 2);
+		m_noeuds[2]->setCoord(0, m_h / 2);
+
+		// Connexions
+
+		Connexion cDroite;
+
+		cDroite.setCoord(m_w - 16, (m_h - 76) / 2, 16, 76);
+		cDroite.setDirection(Connexion::Direction::Droite);
+		cDroite.setNoeud(m_noeuds[1]);
+		m_connexions[0] = cDroite;
+	}
+	else
+	{
+		m_positionRotation = Salle::Orientation::Haut;
+
+		m_textureSalle = loader.obtenirTexture("images/sas/haut/salle.png");
+		m_textureConnexions = loader.obtenirTexture("images/sas/haut/connexions.png");
+
+		m_w = (m_textureSalle->getSize()).x;
+		m_h = (m_textureSalle->getSize()).y;
+
+		// Noeuds
+
+		m_noeuds[0]->setCoord(m_w / 2, m_h / 2);
+		m_noeuds[1]->setCoord(m_w / 2, m_h);
+		m_noeuds[2]->setCoord(m_w / 2, 0);
+
+		// Connexions
+
+		Connexion cBas;
+
+		cBas.setCoord((m_w - 76) / 2, m_h - 16, 76, 16);
+		cBas.setDirection(Connexion::Direction::Bas);
+		cBas.setNoeud(m_noeuds[1]);
+		m_connexions[0] = cBas;
+	}
+}
+
+
+Noeud* SAS::getNoeudSAS()
+{
+	return m_noeuds[0];
+}
+
+
+Noeud* SAS::getNoeudSortieSAS()
+{
+	return m_noeuds[2];
 }

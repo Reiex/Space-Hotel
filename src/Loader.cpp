@@ -5,7 +5,7 @@ Loader::Loader()
 {
 	// Chargement des images
 
-	int const nombreImages(98);
+	int const nombreImages(110);
 
 	std::string cheminsImages[nombreImages] = {
 		"images/fond/fond.png",
@@ -45,6 +45,11 @@ Loader::Loader()
 		"images/interface/fusion salles/bouton.png",
 		"images/interface/fusion salles/bouton hover.png",
 		"images/interface/fusion salles/bouton onclick.png",
+
+		"images/interface/creation station/fond.png",
+		"images/interface/creation station/boutons.png",
+		"images/interface/creation station/boutons hover.png",
+		"images/interface/creation station/boutons onclick.png",
 
 		"images/interface/detail machine/fond.png",
 		"images/interface/detail machine/progression.png",
@@ -124,6 +129,15 @@ Loader::Loader()
 		"images/panneau radiateur/vertical/connexions.png",
 		"images/panneau radiateur/horizontal/salle.png",
 		"images/panneau radiateur/horizontal/connexions.png",
+
+		"images/sas/haut/salle.png",
+		"images/sas/haut/connexions.png",
+		"images/sas/bas/salle.png",
+		"images/sas/bas/connexions.png",
+		"images/sas/droit/salle.png",
+		"images/sas/droit/connexions.png",
+		"images/sas/gauche/salle.png",
+		"images/sas/gauche/connexions.png",
 
 
 		"images/personnages/normal.png",

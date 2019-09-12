@@ -221,4 +221,19 @@ class PanneauRadiateur : public Salle
 };
 
 
+class SAS : public Salle
+{
+	public:
+
+		static std::vector<SAS*> ListeSAS;
+
+		SAS(Loader& loader);
+
+		void effectuerRotation(Loader& loader);
+
+		Noeud* getNoeudSAS();
+		Noeud* getNoeudSortieSAS();
+};
+
+
 #endif // SALLE_H_INCLUDED

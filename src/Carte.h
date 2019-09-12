@@ -42,7 +42,7 @@ class Carte
 
 		void gererMachinesRessources(float dt);
 
-		void gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& sallesPointees, Machine* machinePointee, Salle*& nouvelleSalle);
+		void gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& sallesPointees, Machine* machinePointee, Salle*& nouvelleSalle, Station*& nouvelleStation);
 		void ajouterInformation(std::string chaine);
 		void gestionInformation(sf::RenderWindow const& window);
 
@@ -52,7 +52,9 @@ class Carte
 		Salle* preparerCreationSalle(sf::RenderWindow& window, Salle* nouvelleSalle);
 		Asteroide* preparerCreationStation(sf::RenderWindow& window, Station* nouvelleStation);
 		void ajouterSalle(Salle* nouvelleSalle, Salle* salleConnectee);
+		void ajouterStation(Station* nouvelleStation, Asteroide* asteroideProche);
 		bool enleverSalles(std::vector<Salle*>& sallesPointees);
+		void assurerConnectionSAS();
 
 		void selectionSalle(sf::RenderWindow const& window, std::vector<Salle*>& sallesPointees) const;
 		void selectionMachine(sf::RenderWindow const& window, Machine*& machinePointee) const;
