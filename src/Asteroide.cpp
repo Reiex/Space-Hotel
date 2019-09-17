@@ -62,6 +62,7 @@ void Asteroide::connecterStation(Station* nouvelleStation)
 	m_machines.push_back(nouvelleStation);
 
 	m_noeuds.push_back(new Noeud);
+	m_noeuds[m_noeuds.size() - 1]->setType(Noeud::Machine);
 	m_noeuds[m_noeuds.size() - 1]->setCoord(nouvelleStation->getX() + nouvelleStation->getW() / 2, nouvelleStation->getY() + nouvelleStation->getH() / 2);
 
 	nouvelleStation->setNoeudProche(m_noeuds[m_noeuds.size() - 1]);
@@ -218,10 +219,31 @@ Foreuse::Foreuse(Loader& loader) : Station(0, 3)
 
 void Foreuse::faireFonctionner(float dt, bool panneElectrique)
 {
-	m_avancement += dt;
-	if (m_avancement > 1)
+
+	if (m_emplacements[0].getRessource() != 0 && m_emplacements[1].getRessource() != 0 && m_emplacements[2].getRessource() != 0)
 	{
-		m_avancement -= 1;
+		m_avancement = 0;
+	}
+	else
+	{
+		m_avancement += dt / 60;
+		if (m_avancement >= 1)
+		{
+			Ressource* ressource(new Ressource(Ressource::Minerai));
+			if (m_emplacements[0].getRessource() == 0)
+			{
+				m_emplacements[0].setRessource(ressource);
+			}
+			else if (m_emplacements[1].getRessource() == 0)
+			{
+				m_emplacements[1].setRessource(ressource);
+			}
+			else
+			{
+				m_emplacements[2].setRessource(ressource);
+			}
+			m_avancement = 0;
+		}
 	}
 }
 

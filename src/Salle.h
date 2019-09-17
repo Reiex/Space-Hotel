@@ -236,4 +236,24 @@ class SAS : public Salle
 };
 
 
+class Reserve : public Salle
+{
+	public:
+		
+		Reserve(Loader& loader);
+
+		void effectuerRotation(Loader& loader);
+};
+
+
+class Fonderie : public Salle
+{
+	public:
+
+		Fonderie(Loader& loader);
+
+		void effectuerRotation(Loader& loader);
+};
+
+
 #endif // SALLE_H_INCLUDED

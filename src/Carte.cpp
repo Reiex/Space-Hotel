@@ -1299,6 +1299,12 @@ void Carte::gererClicMenu(sf::RenderWindow const& window, std::vector<Salle*>& s
 			case 12:
 				nouvelleSalle = new SAS(m_loader);
 				break;
+			case 13:
+				nouvelleSalle = new Reserve(m_loader);
+				break;
+			case 14:
+				nouvelleSalle = new Fonderie(m_loader);
+				break;
 			default:
 				break;
 		}

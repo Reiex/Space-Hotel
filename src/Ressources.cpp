@@ -220,10 +220,12 @@ Ressource* EmplacementRessource::getRessource() const
 // FONCTIONS MEMBRES DE LA CLASSE RESSOURCE
 
 
-int const Ressource::nbTypes(2);
+int const Ressource::nbTypes(4);
 std::string const Ressource::cheminsTypes[Ressource::nbTypes] = {
 		"images/interface/logo eau.png",
-		"images/interface/logo eau sale.png"
+		"images/interface/logo eau sale.png",
+		"images/interface/logo minerai.png",
+		"images/interface/logo metal.png"
 	};
 
 
@@ -694,6 +696,7 @@ void FiltreEau::faireFonctionner(float dt, bool panneElectrique)
 			m_emplacements[0].setRessource(0);
 			ressource->setType(Ressource::Eau);
 			m_emplacements[1].setRessource(ressource);
+			m_avancement = 0;
 		}
 	}
 }
@@ -799,12 +802,12 @@ void FiltreEau::afficherDetails(sf::RenderWindow& window, Loader& loader, bool p
 	texture = loader.obtenirTexture("images/interface/detail machine/progression.png");
 	sprite.setTexture(*texture);
 	sprite.setTextureRect(sf::IntRect(0, 0, 84, 30));
-	sprite.setPosition(x + (w - 160)/2 + 48, y + 40 + (h - 80)/2 + 40);
+	sprite.setPosition(x + (w - 160)/2 + 40, y + 40 + (h - 80)/2 + 40);
 	sprite.setScale(1, 1);
 	window.draw(sprite);
 
 	sprite.setTextureRect(sf::IntRect(0, 30, 75*m_avancement, 22));
-	sprite.setPosition(x + (w - 160)/2 + 51, y + 40 + (h - 80)/2 + 44);
+	sprite.setPosition(x + (w - 160)/2 + 43, y + 40 + (h - 80)/2 + 44);
 	window.draw(sprite);
 }
 
@@ -990,4 +993,288 @@ void TerminalRadiateur::afficherDetails(sf::RenderWindow& window, Loader& loader
 	texte.setPosition(x + wTexte + 50, y + h - 40);
 	texte.setCharacterSize(30);
 	window.draw(texte);
+}
+
+
+// FONCTIONS MEMBRES DE LA CLASSE STOCK
+
+
+Stock::Stock(Loader& loader) : Machine(20, 0)
+{
+	for (int i(0); i < 20; i++)
+	{
+		m_emplacements[i].interdireRessource(Ressource::Eau);
+		m_emplacements[i].interdireRessource(Ressource::EauSale);
+	}
+
+	m_x = 32;
+	m_y = 25;
+	m_w = 99;
+	m_h = 151;
+
+	m_texture = loader.obtenirTexture("images/reserve/verticale/stock.png");
+
+	m_energieConso = 2;
+	m_chaleurDissipee = 0;
+}
+
+
+void Stock::faireFonctionner(float dt, bool panneElectrique)
+{
+
+}
+
+
+void Stock::effectuerRotation(Loader& loader)
+{
+	if (m_texture == loader.obtenirTexture("images/reserve/verticale/stock.png"))
+	{
+		m_x = 25;
+		m_y = 53;
+		m_w = 151;
+		m_h = 99;
+
+		m_texture = loader.obtenirTexture("images/reserve/horizontale/stock.png");
+	}
+	else
+	{
+		m_x = 32;
+		m_y = 25;
+		m_w = 99;
+		m_h = 151;
+
+		m_texture = loader.obtenirTexture("images/reserve/verticale/stock.png");
+	}
+}
+
+
+void Stock::afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const
+{
+	int x(SurfaceDessinDetails.getX()), y(SurfaceDessinDetails.getY()), w(SurfaceDessinDetails.getW()), h(SurfaceDessinDetails.getH());
+
+	sf::Texture* texture;
+	sf::Sprite sprite;
+	sf::Text texte;
+	texte.setFont(*(loader.getFont()));
+	texte.setFillColor(sf::Color(5, 15, 6));
+	texte.setCharacterSize(25);
+
+	/*
+		Consommation électrique: [] X
+
+		Stock:
+
+			[] [] [] [] [] [] [] [] [] []
+
+			[] [] [] [] [] [] [] [] [] []
+	*/
+
+	// Consommation électrique
+
+	texte.setString(sf::String("Consommation électrique:"));
+	texte.setPosition(x, y + 5);
+	window.draw(texte);
+
+	int wTexte(texte.getGlobalBounds().width);
+	texture = loader.obtenirTexture("images/interface/logo electricite.png");
+	sprite.setTexture(*texture);
+	sprite.setPosition(x + wTexte + 10, y + 3);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	texte.setString(sf::String(float_to_string(m_energieConso)));
+	texte.setPosition(x + wTexte + 50, y);
+	texte.setCharacterSize(30);
+	window.draw(texte);
+
+	texte.setCharacterSize(25);
+
+	// Stock
+
+	int nbEau(0);
+	texte.setString(sf::String("Stock:"));
+	texte.setPosition(x, y + 35 + (h - 35 - 110) / 2);
+	window.draw(texte);
+
+	for (int i(0); i < 20; i++)
+	{
+		if (m_emplacements[i].getRessource() != 0)
+		{
+			texture = loader.obtenirTexture(Ressource::cheminsTypes[m_emplacements[i].getRessource()->getType()]);
+		}
+		else
+		{
+			texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
+		}
+		sprite.setTexture(*texture);
+		sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+		sprite.setScale(0.3, 0.3);
+
+		sprite.setPosition(x + (w - 390) / 2 + 40 * (i % 10), y + 35 + (h - 35 - 110) / 2 + 40 + (i > 9 ? 40: 0));
+		window.draw(sprite);
+	}
+}
+
+
+// FONCTIONS MEMBRES DE LA CLASSE FOUR
+
+
+Four::Four(Loader& loader) : Machine(1, 1)
+{
+	m_emplacements[0].setRessourceNecessaire(true);
+
+	for (int i(0); i < Ressource::nbTypes; i++)
+	{
+		if (i != Ressource::Minerai)
+		{
+			m_emplacements[0].interdireRessource(i);
+		}
+		if (i != Ressource::Metal)
+		{
+			m_emplacements[1].interdireRessource(i);
+		}
+	}
+
+	m_x = 25;
+	m_y = 72;
+	m_w = 61;
+	m_h = 106;
+
+	m_texture = loader.obtenirTexture("images/fonderie/verticale/four.png");
+
+	m_energieConso = 5;
+	m_chaleurDissipee = 0;
+
+	m_avancement = 0;
+}
+
+
+void Four::faireFonctionner(float dt, bool panneElectrique)
+{
+	if (panneElectrique || m_emplacements[0].getRessource() == 0 || m_emplacements[1].getRessource() != 0)
+	{
+		m_avancement = 0;
+	}
+	else
+	{
+		m_avancement += dt / 30;
+		if (m_avancement >= 1)
+		{
+			Ressource* ressource(m_emplacements[0].getRessource());
+			m_emplacements[0].setRessource(0);
+			ressource->setType(Ressource::Metal);
+			m_emplacements[1].setRessource(ressource);
+			m_avancement = 0;
+		}
+	}
+}
+
+
+void Four::effectuerRotation(Loader& loader)
+{
+	if (m_texture == loader.obtenirTexture("images/fonderie/verticale/four.png"))
+	{
+		m_x = 72;
+		m_y = 46;
+		m_w = 107;
+		m_h = 61;
+
+		m_texture = loader.obtenirTexture("images/fonderie/horizontale/four.png");
+	}
+	else
+	{
+		m_x = 25;
+		m_y = 72;
+		m_w = 61;
+		m_h = 106;
+
+		m_texture = loader.obtenirTexture("images/fonderie/verticale/four.png");
+	}
+}
+
+
+void Four::afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const
+{
+	int x(SurfaceDessinDetails.getX()), y(SurfaceDessinDetails.getY()), w(SurfaceDessinDetails.getW()), h(SurfaceDessinDetails.getH());
+
+	sf::Texture* texture;
+	sf::Sprite sprite;
+	sf::Text texte;
+	texte.setFont(*(loader.getFont()));
+	texte.setFillColor(sf::Color(5, 15, 6));
+	texte.setCharacterSize(25);
+
+	/*
+		Consommation électrique: [] X
+
+		Fonte du minerai:
+
+			[] ===> []
+
+	*/
+
+	// Consommation électrique
+
+	texte.setString(sf::String("Consommation électrique:"));
+	texte.setPosition(x, y + 5);
+	window.draw(texte);
+
+	int wTexte(texte.getGlobalBounds().width);
+	texture = loader.obtenirTexture("images/interface/logo electricite.png");
+	sprite.setTexture(*texture);
+	sprite.setPosition(x + wTexte + 10, y + 3);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	texte.setString(sf::String(float_to_string(m_energieConso)));
+	texte.setPosition(x + wTexte + 50, y);
+	texte.setCharacterSize(30);
+	window.draw(texte);
+
+	texte.setCharacterSize(25);
+
+	// Avancement de la fonte du minerai
+
+	texte.setString(sf::String("Fonte du minerai:"));
+	texte.setPosition(x, y + 40 + (h - 80) / 2);
+	window.draw(texte);
+
+	if (m_emplacements[0].estOccupe())
+	{
+		texture = loader.obtenirTexture(Ressource::cheminsTypes[m_emplacements[0].getRessource()->getType()]);
+	}
+	else
+	{
+		texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
+	}
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setPosition(x + (w - 160) / 2, y + 40 + (h - 80) / 2 + 40);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	if (m_emplacements[1].getRessource() != 0)
+	{
+		texture = loader.obtenirTexture(Ressource::cheminsTypes[m_emplacements[1].getRessource()->getType()]);
+	}
+	else
+	{
+		texture = loader.obtenirTexture("images/interface/logo ressource manquante.png");
+	}
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
+	sprite.setPosition(x + (w - 160) / 2 + 130, y + 40 + (h - 80) / 2 + 40);
+	sprite.setScale(0.3, 0.3);
+	window.draw(sprite);
+
+	texture = loader.obtenirTexture("images/interface/detail machine/progression.png");
+	sprite.setTexture(*texture);
+	sprite.setTextureRect(sf::IntRect(0, 0, 84, 30));
+	sprite.setPosition(x + (w - 160) / 2 + 40, y + 40 + (h - 80) / 2 + 40);
+	sprite.setScale(1, 1);
+	window.draw(sprite);
+
+	sprite.setTextureRect(sf::IntRect(0, 30, 75 * m_avancement, 22));
+	sprite.setPosition(x + (w - 160) / 2 + 43, y + 40 + (h - 80) / 2 + 44);
+	window.draw(sprite);
 }

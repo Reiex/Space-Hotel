@@ -76,7 +76,7 @@ class Ressource : public Entite
 {
 	public:
 
-		enum Type {Eau, EauSale};
+		enum Type {Eau, EauSale, Minerai, Metal};
 		static int const nbTypes;
 		static std::string const cheminsTypes[];
 
@@ -177,12 +177,39 @@ class FiltreEau : public Machine
 
 class TerminalRadiateur : public Machine
 {
-public:
+	public:
 
-	TerminalRadiateur(Loader& loader);
-	void faireFonctionner(float dt, bool panneElectrique);
-	void effectuerRotation(Loader& loader);
-	void afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const;
+		TerminalRadiateur(Loader& loader);
+		void faireFonctionner(float dt, bool panneElectrique);
+		void effectuerRotation(Loader& loader);
+		void afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const;
+};
+
+
+class Stock : public Machine
+{
+	public:
+
+		Stock(Loader& loader);
+		void faireFonctionner(float dt, bool panneElectrique);
+		void effectuerRotation(Loader& loader);
+		void afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const;
+};
+
+
+class Four : public Machine
+{
+	public:
+
+		Four(Loader& loader);
+		void faireFonctionner(float dt, bool panneElectrique);
+		void effectuerRotation(Loader& loader);
+		void afficherDetails(sf::RenderWindow& window, Loader& loader, bool panneElectrique) const;
+
+	private:
+
+		float m_avancement;
+
 };
 
 

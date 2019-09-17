@@ -5,7 +5,7 @@ Loader::Loader()
 {
 	// Chargement des images
 
-	int const nombreImages(110);
+	int const nombreImages(124);
 
 	std::string cheminsImages[nombreImages] = {
 		"images/fond/fond.png",
@@ -22,6 +22,8 @@ Loader::Loader()
 		"images/interface/logo temperature.png",
 		"images/interface/logo ressource manquante.png",
 		"images/interface/logo eau sale.png",
+		"images/interface/logo minerai.png",
+		"images/interface/logo metal.png",
 
 		"images/interface/HUD gauche/fond.png",
 		"images/interface/HUD gauche/boutons.png",
@@ -138,6 +140,20 @@ Loader::Loader()
 		"images/sas/droit/connexions.png",
 		"images/sas/gauche/salle.png",
 		"images/sas/gauche/connexions.png",
+
+		"images/fonderie/verticale/salle.png",
+		"images/fonderie/verticale/connexions.png",
+		"images/fonderie/verticale/four.png",
+		"images/fonderie/horizontale/salle.png",
+		"images/fonderie/horizontale/connexions.png",
+		"images/fonderie/horizontale/four.png",
+
+		"images/reserve/verticale/salle.png",
+		"images/reserve/verticale/connexions.png",
+		"images/reserve/verticale/stock.png",
+		"images/reserve/horizontale/salle.png",
+		"images/reserve/horizontale/connexions.png",
+		"images/reserve/horizontale/stock.png",
 
 
 		"images/personnages/normal.png",

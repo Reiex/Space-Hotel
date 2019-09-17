@@ -317,11 +317,11 @@ MenuCreationSalle::MenuCreationSalle(Loader& loader, sf::VideoMode const& resolu
 
 	float scaleX(resolution.width / 1920), scaleY(resolution.height / 1080);
 
-	setCoord(130 * scaleX, 104 * scaleY, 460 * scaleX, 570 * scaleY);
-	m_spriteFond = sf::Sprite(*loader.obtenirTexture("images/interface/creation salle/fond.png"), sf::IntRect(130, 104, 460, 570));
+	setCoord(130 * scaleX, 104 * scaleY, 460 * scaleX, 680 * scaleY);
+	m_spriteFond = sf::Sprite(*loader.obtenirTexture("images/interface/creation salle/fond.png"), sf::IntRect(130, 104, 460, 680));
 	m_spriteFond.setPosition(130 * scaleX, 104 * scaleY);
 
-	sf::IntRect coordBoutons[13] = {
+	sf::IntRect coordBoutons[15] = {
 
 		sf::IntRect(145, 119, 100, 100),  // Couloir I
 		sf::IntRect(255, 119, 100, 100),  // Couloir T
@@ -339,10 +339,13 @@ MenuCreationSalle::MenuCreationSalle(Loader& loader, sf::VideoMode const& resolu
 		sf::IntRect(145, 449, 100, 100),  // Salle de refroidissement
 		sf::IntRect(255, 449, 100, 100),  // Panneau radiateur
 
-		sf::IntRect(145, 559, 100, 100)  // SAS
+		sf::IntRect(145, 559, 100, 100),  // SAS
+		sf::IntRect(255, 559, 100, 100),  // Réserve
+
+		sf::IntRect(145, 669, 100, 100)   // Fonderie
 	};
 
-	std::string chainesDescriptions[13] = {
+	std::string chainesDescriptions[15] = {
 		"Couloir I\nSalle vide.",
 
 		"Couloir T\nSalle vide.",
@@ -385,10 +388,16 @@ MenuCreationSalle::MenuCreationSalle(Loader& loader, sf::VideoMode const& resolu
 		"Cette salle est une impasse, elle ne peut être connectée qu'à une seule autre salle.",
 
 		"SAS\n"
-		"Permet aux habitants de sortir dans le vide spatiale."
+		"Salle permettant aux habitants de sortir dans le vide spatiale.",
+
+		"Réserve\n"
+		"Salle permettant de stocker des ressources.",
+		
+		"Fonderie\n"
+		"Salle permettant de faire fondre le minerai pour en extraire le métal."
 	};
 
-	for (int i(0); i < 13; i++)
+	for (int i(0); i < 15; i++)
 	{
 		sf::Sprite sprite(*loader.obtenirTexture("images/interface/creation salle/boutons.png"), coordBoutons[i]);
 		sf::Sprite spriteHover(*loader.obtenirTexture("images/interface/creation salle/boutons hover.png"), coordBoutons[i]);
