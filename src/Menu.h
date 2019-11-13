@@ -2,6 +2,7 @@
 #define INTERFACE_H_INCLUDED
 
 #include "Connexion.h"
+#include <math.h>
 
 
 // FENETRES

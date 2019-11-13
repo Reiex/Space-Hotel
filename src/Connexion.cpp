@@ -67,7 +67,7 @@ void Connexion::deconnecter()
 	if (m_salleConnectee != 0)
 	{
 		m_salleConnectee->m_connectee = false;
-		m_salleConnectee->m_salleConnectee = false;
+		m_salleConnectee->m_salleConnectee = 0;
 		m_salleConnectee = 0;
 	}
 }
