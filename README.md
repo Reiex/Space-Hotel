@@ -1,13 +1,7 @@
-# [C++][SFML] Space-Hotel - Management game 2D
+# Space-Hotel - [C++][SFML] A 2D construction and management game
 
-## Description du jeu
+Space-Hotel is a game I started developping during my engineering school by that I abandonned due to lack of time, even though it was in a pretty advanced state. In this game, you manage a space station, adding modules one to another, managing resources, heat dissipation, power/water consumption, population, etc. You can for example mine nearby asteroids using probes to obtain basic resources transformed in your modules into useful materials.
 
-Space-Hotel est un jeu de gestion d'une station spatiale. Vous partez d'une simple petite salle des commandes et devez construire votre station spatiale pour atteindre la survie, puis l'expansion, puis développer votre station en station touristique.
+Here's a picture of the game as it was before being abandonned (this time it's not Paint, but Paint.net !):
 
-... Du moins ça, c'est le pitch du jeu au début. Cependant avec mes études qui sont devenues très prenantes, puis mes autres projets personnels, j'ai fini par abandonner ce projet. L'idée du jeu restera peut être et sera peut être développée dans le futur, mais ma manière de coder a trop changé et la base de code est trop vieille et mal ordonnée pour que je puisse continuer ce projet en tant que tel.
-
-Ainsi, seuls les aspects création de salle et quelques aspects primaires de gestion sont implémentés.
-
-Voici tout de même une petite image du jeu:
-
-![Image du jeu](images/screenshot.png)
+![](https://mpelegrin.hd.free.fr/images/videogames/screenshot-space-hotel.webp)
